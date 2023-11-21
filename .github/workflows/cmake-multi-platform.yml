@@ -31,7 +31,7 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         
     - name: Install libraries
-      run: sudo apt-get install libcmocka-dev
+      run: sudo apt-get install libcmocka-dev valgrind
       
     - name: Configure CMake
       run: >
