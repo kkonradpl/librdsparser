@@ -20,23 +20,11 @@
 #include <stdbool.h>
 #include "librds.h"
 
-typedef enum librds_block
-{
-    LIBRDS_BLOCK_A = 0,
-    LIBRDS_BLOCK_B = 1,
-    LIBRDS_BLOCK_C = 2,
-    LIBRDS_BLOCK_D = 3,
-    LIBRDS_BLOCK_COUNT
-} librds_block_t;
-
 typedef enum librds_group_flag
 {
     LIBRDS_GROUP_FLAG_A = 0,
     LIBRDS_GROUP_FLAG_B = 1
 } librds_group_flag_t;
-
-typedef uint16_t librds_data_t[LIBRDS_BLOCK_COUNT];
-typedef uint8_t librds_error_t[LIBRDS_BLOCK_COUNT];
 
 struct librds
 {

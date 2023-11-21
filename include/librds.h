@@ -23,6 +23,15 @@
 extern "C" {
 #endif
 
+typedef enum librds_block
+{
+    LIBRDS_BLOCK_A = 0,
+    LIBRDS_BLOCK_B = 1,
+    LIBRDS_BLOCK_C = 2,
+    LIBRDS_BLOCK_D = 3,
+    LIBRDS_BLOCK_COUNT
+} librds_block_t;
+
 typedef enum librds_block_error
 {
     LIBRDS_BLOCK_ERROR_NONE = 0,
@@ -68,6 +77,8 @@ typedef enum librds_rt_flag
 } librds_rt_flag_t;
 
 typedef struct librds librds_t;
+typedef uint16_t librds_data_t[LIBRDS_BLOCK_COUNT];
+typedef uint8_t librds_error_t[LIBRDS_BLOCK_COUNT];
 
 #define LIBRDS_AF_BUFFER_SIZE 26
 typedef uint8_t librds_af_t[LIBRDS_AF_BUFFER_SIZE];
@@ -84,6 +95,8 @@ void librds_free(librds_t *context);
 
 void librds_init(librds_t *context);
 void librds_clear(librds_t *context);
+
+void librds_parse(librds_t *context, librds_data_t data, librds_error_t errors);
 bool librds_parse_string(librds_t *context, const char *input);
 
 void librds_set_correction(librds_t *context, librds_string_t string, librds_block_type_t type, librds_block_error_t error);
