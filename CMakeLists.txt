@@ -1,11 +1,16 @@
 cmake_minimum_required(VERSION 3.6)
 project(librds)
 option(LIBRDS_DISABLE_HEAP "Disable heap allocator (librds_new/free)" OFF)
+option(LIBRDS_DISABLE_UNICODE "Disable unicode support" OFF)
 option(LIBRDS_DISABLE_TESTS "Disable tests" OFF)
 option(LIBRDS_DISABLE_EXAMPLES "Disable examples" OFF)
 
 if(LIBRDS_DISABLE_HEAP)
     add_definitions(-DLIBRDS_DISABLE_HEAP)
+endif()
+
+if(LIBRDS_DISABLE_UNICODE)
+    add_definitions(-DLIBRDS_DISABLE_UNICODE)
 endif()
 
 include_directories(librds PRIVATE include)

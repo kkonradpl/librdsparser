@@ -20,6 +20,9 @@
 #include <stdbool.h>
 #include "librds.h"
 
+#define LIBRDS_STRING_SIZE(len) (1 + (len) + 1 + \
+                                 (len) / sizeof(librds_string_char_t))
+
 typedef enum librds_group_flag
 {
     LIBRDS_GROUP_FLAG_A = 0,
@@ -28,32 +31,35 @@ typedef enum librds_group_flag
 
 struct librds
 {
+    /* Data buffers */
     int32_t pi;
     int8_t tp;
     int8_t ta;
     int8_t ms;
     int8_t pty;
-    librds_af_t af;
     int16_t ecc;
-    char ps[LIBRDS_PS_LENGTH+1];
-    librds_string_error_t ps_errors[LIBRDS_PS_LENGTH];
-    char rt[LIBRDS_RT_FLAG_COUNT][LIBRDS_RT_LENGTH+1];
-    librds_string_error_t rt_errors[LIBRDS_RT_FLAG_COUNT][LIBRDS_RT_LENGTH];
-    int8_t last_rt_flag;
+    librds_af_t af;
+    librds_string_t ps[LIBRDS_STRING_SIZE(LIBRDS_PS_LENGTH)];
+    librds_string_t rt[LIBRDS_RT_FLAG_COUNT][LIBRDS_STRING_SIZE(LIBRDS_RT_LENGTH)];
 
-    bool progressive[LIBRDS_STRING_COUNT];
-    librds_block_error_t correction[LIBRDS_STRING_COUNT][LIBRDS_BLOCK_TYPE_COUNT];
+    /* Settings */
+    bool progressive[LIBRDS_TEXT_COUNT];
+    librds_block_error_t correction[LIBRDS_TEXT_COUNT][LIBRDS_BLOCK_TYPE_COUNT];
 
+    /* Callbacks */
     void *user_data;
     void (*callback_pi)(uint16_t, void*);
     void (*callback_pty)(uint8_t, void*);
     void (*callback_tp)(bool, void*);
     void (*callback_ta)(bool, void*);
     void (*callback_ms)(bool, void*);
-    void (*callback_af)(uint8_t, void*);
     void (*callback_ecc)(uint8_t, void*);
-    void (*callback_ps)(const char*, const librds_string_error_t[LIBRDS_PS_LENGTH], void*);
-    void (*callback_rt)(const char*, const librds_string_error_t[LIBRDS_RT_LENGTH], librds_rt_flag_t, void*);
+    void (*callback_af)(uint8_t, void*);
+    void (*callback_ps)(const librds_string_t*, void*);
+    void (*callback_rt)(const librds_string_t*, librds_rt_flag_t, void*);
+
+    /* Other data */
+    int8_t last_rt_flag;
 };
 
 #endif

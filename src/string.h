@@ -17,9 +17,8 @@
 #ifndef LIBRDS_STRING_H
 #define LIBRDS_STRING_H
 
-librds_string_error_t librds_string_error(librds_block_error_t pos_error, librds_block_error_t data_error);
-bool librds_string_available(const librds_string_error_t *errors, uint8_t length);
-void librds_string_clear(char *string, librds_string_error_t *error, uint8_t length);
-bool librds_string_update(char *output, librds_string_error_t *output_errors, const char input[2], librds_string_error_t input_error, uint8_t position, bool progressive, bool allow_eol);
+void librds_string_init(librds_string_t *string, uint8_t size);
+void librds_string_clear(librds_string_t *string);
+bool librds_string_update(librds_string_t *string, const char input[2], librds_block_error_t pos_error, librds_block_error_t data_error, uint8_t position, bool progressive, bool allow_eol);
 
 #endif

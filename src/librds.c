@@ -27,7 +27,6 @@ librds_t*
 librds_new(void)
 {
     librds_t *context = malloc(sizeof(librds_t));
-
     if (context)
     {
         librds_init(context);
@@ -50,6 +49,9 @@ void
 librds_init(librds_t *context)
 {
     memset(context, 0, sizeof(librds_t));
+    librds_string_init(context->ps, LIBRDS_PS_LENGTH);
+    librds_string_init(context->rt[0], LIBRDS_RT_LENGTH);
+    librds_string_init(context->rt[1], LIBRDS_RT_LENGTH);
     librds_clear(context);
 }
 
@@ -63,9 +65,9 @@ librds_clear(librds_t *context)
     context->pty = -1;
     context->ecc = -1;
     librds_af_clear(context->af);
-    librds_string_clear(context->ps, context->ps_errors, LIBRDS_PS_LENGTH);
-    librds_string_clear(context->rt[0], context->rt_errors[0], LIBRDS_RT_LENGTH);
-    librds_string_clear(context->rt[1], context->rt_errors[1], LIBRDS_RT_LENGTH);
+    librds_string_clear(context->ps);
+    librds_string_clear(context->rt[0]);
+    librds_string_clear(context->rt[1]);
     context->last_rt_flag = -1;
 }
 
@@ -95,36 +97,36 @@ librds_parse_string(librds_t   *context,
 }
 
 void
-librds_set_correction(librds_t             *context,
-                      librds_string_t       string,
-                      librds_block_type_t   type,
-                      librds_block_error_t  error)
+librds_set_text_correction(librds_t             *context,
+                           librds_text_t         text,
+                           librds_block_type_t   type,
+                           librds_block_error_t  error)
 {
     const librds_block_error_t max_error = LIBRDS_BLOCK_ERROR_UNCORRECTABLE - 1;
-    context->correction[string][type] = (error < max_error ? error : max_error);
+    context->correction[text][type] = (error < max_error ? error : max_error);
 }
 
 librds_block_error_t
-librds_get_correction(const librds_t      *context,
-                      librds_string_t      string,
-                      librds_block_type_t  type)
+librds_get_text_correction(const librds_t      *context,
+                           librds_text_t        text,
+                           librds_block_type_t  type)
 {
-    return context->correction[string][type];
+    return context->correction[text][type];
 }
 
 void
-librds_set_progressive(librds_t        *context,
-                       librds_string_t  string,
-                       bool             state)
+librds_set_text_progressive(librds_t        *context,
+                            librds_text_t    text,
+                            bool             state)
 {
-    context->progressive[string] = state;
+    context->progressive[text] = state;
 }
 
 bool
-librds_get_progressive(const librds_t  *context,
-                       librds_string_t  string)
+librds_get_text_progressive(const librds_t  *context,
+                            librds_text_t    text)
 {
-    return context->progressive[string];
+    return context->progressive[text];
 }
 
 int32_t
@@ -157,55 +159,29 @@ librds_get_pty(const librds_t *context)
     return context->pty;
 }
 
-const librds_af_t*
-librds_get_af(const librds_t *context)
-{
-    return (const librds_af_t*)&context->af;
-}
-
 int16_t
 librds_get_ecc(const librds_t *context)
 {
     return context->ecc;
 }
 
-const char*
+const librds_af_t*
+librds_get_af(const librds_t *context)
+{
+    return (const librds_af_t*)&context->af;
+}
+
+const librds_string_t*
 librds_get_ps(const librds_t *context)
 {
     return context->ps;
 }
 
-const librds_string_error_t*
-librds_get_ps_errors(const librds_t *context)
-{
-    return context->ps_errors;
-}
-
-const char*
+const librds_string_t*
 librds_get_rt(const librds_t   *context,
               librds_rt_flag_t  flag)
 {
     return context->rt[!!flag];
-}
-
-const librds_string_error_t*
-librds_get_rt_errors(const librds_t   *context,
-                     librds_rt_flag_t  flag)
-{
-    return context->rt_errors[!!flag];
-}
-
-bool
-librds_get_ps_available(const librds_t *context)
-{
-    return librds_string_available(context->ps_errors, LIBRDS_PS_LENGTH);
-}
-
-bool
-librds_get_rt_available(const librds_t   *context,
-                        librds_rt_flag_t  flag)
-{
-    return librds_string_available(context->rt_errors[!!flag], LIBRDS_RT_LENGTH);
 }
 
 void
@@ -251,13 +227,6 @@ librds_register_ms(librds_t  *context,
 }
 
 void
-librds_register_af(librds_t  *context,
-                   void     (*callback_af)(uint8_t, void*))
-{
-    context->callback_af = callback_af;
-}
-
-void
 librds_register_ecc(librds_t  *context,
                     void     (*callback_ecc)(uint8_t, void*))
 {
@@ -265,15 +234,22 @@ librds_register_ecc(librds_t  *context,
 }
 
 void
+librds_register_af(librds_t  *context,
+                   void     (*callback_af)(uint8_t, void*))
+{
+    context->callback_af = callback_af;
+}
+
+void
 librds_register_ps(librds_t  *context,
-                   void     (*callback_ps)(const char*, const librds_string_error_t*, void*))
+                   void     (*callback_ps)(const librds_string_t*, void*))
 {
     context->callback_ps = callback_ps;
 }
 
 void
 librds_register_rt(librds_t  *context,
-                   void     (*callback_rt)(const char*, const librds_string_error_t*, librds_rt_flag_t, void*))
+                   void     (*callback_rt)(const librds_string_t*, librds_rt_flag_t, void*))
 {
     context->callback_rt = callback_rt;
 }

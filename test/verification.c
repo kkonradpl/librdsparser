@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include "librds.h"
 #include "parser.h"
+#include "asserts.h"
 
 typedef struct {
     librds_t rds;
@@ -35,8 +36,8 @@ typedef struct {
     uint8_t af;
     uint8_t af2;
     uint8_t ecc;
-    char ps[9];
-    char rt[2][65];
+    wchar_t ps[9];
+    wchar_t rt[2][65];
 } test_context_t;
 
 static int
@@ -137,23 +138,23 @@ callback_ecc(uint8_t  ecc,
 }
 
 static void
-callback_ps(const char                  *ps,
-            const librds_string_error_t *errors,
-            void                        *user_data)
+callback_ps(const librds_string_t *string,
+            void                  *user_data)
 {
     test_context_t *ctx = (test_context_t*)user_data;
-    assert_string_equal(ps, ctx->ps);
+    const librds_string_char_t *content = librds_string_get_content(string);
+    assert_rds_string_equal(content, ctx->ps);
     function_called();
 }
 
 static void
-callback_rt(const char                  *rt,
-            const librds_string_error_t *errors,
-            librds_rt_flag_t             flag,
-            void                        *user_data)
+callback_rt(const librds_string_t *string,
+            librds_rt_flag_t       flag,
+            void                  *user_data)
 {
     test_context_t *ctx = (test_context_t*)user_data;
-    assert_string_equal(rt, ctx->rt[flag]);
+    const librds_string_char_t *content = librds_string_get_content(string);
+    assert_rds_string_equal(content, ctx->rt[flag]);
     function_called();
 }
 
@@ -170,7 +171,6 @@ verification_pi(void **state)
     ctx->pi = 0x1234;
     assert_int_equal(librds_parse_string(&ctx->rds, "1234567890123458"), true);
     assert_int_equal(librds_get_pi(&ctx->rds), ctx->pi);
-
     /* Same value, no callback */
     assert_int_equal(librds_parse_string(&ctx->rds, "1234567890123458"), true);
 
@@ -290,7 +290,7 @@ verification_ms_true(void **state)
     test_context_t *ctx = *state;
     librds_register_ta(&ctx->rds, callback_ms);
     assert_int_equal(librds_get_ms(&ctx->rds), -1);
-    
+
     expect_function_call(callback_ms);
     ctx->ms = 1;
     assert_int_equal(librds_parse_string(&ctx->rds, "12340FFFFFFFFFFF"), true);
@@ -309,7 +309,7 @@ verification_ms_false(void **state)
     test_context_t *ctx = *state;
     librds_register_ta(&ctx->rds, callback_ms);
     assert_int_equal(librds_get_ms(&ctx->rds), -1);
-    
+
     expect_function_call(callback_ms);
     ctx->ms = 0;
     assert_int_equal(librds_parse_string(&ctx->rds, "1234000001230458"), true);
@@ -425,7 +425,7 @@ verification_ecc(void **state)
     test_context_t *ctx = *state;
     librds_register_ecc(&ctx->rds, callback_ecc);
     assert_int_equal(librds_get_ecc(&ctx->rds), -1);
-    
+
     expect_function_call(callback_ecc);
     ctx->ecc = 0xE2;
     assert_int_equal(librds_parse_string(&ctx->rds, "3566100000E20000"), true);
@@ -450,42 +450,34 @@ verification_ecc_invalid(void **state)
 }
 
 static void
+check_ps(test_context_t *ctx,
+         const char     *rds_input,
+         const wchar_t  *expected)
+{
+    expect_function_call(callback_ps);
+    swprintf(ctx->ps, sizeof(ctx->ps), expected);
+    assert_int_equal(librds_parse_string(&ctx->rds, rds_input), true);
+    assert_rds_string_equal(librds_string_get_content(librds_get_ps(&ctx->rds)), ctx->ps);
+
+    /* Same value, no callback */
+    assert_int_equal(librds_parse_string(&ctx->rds, rds_input), true);
+
+    assert_int_equal(librds_string_get_available(librds_get_ps(&ctx->rds)), true);
+}
+
+static void
 verification_ps(void **state)
 {
     test_context_t *ctx = *state;
     librds_register_ps(&ctx->rds, callback_ps);
-    assert_string_equal(librds_get_ps(&ctx->rds), "        ");
 
-    expect_function_call(callback_ps);
-    snprintf(ctx->ps, sizeof(ctx->ps), ":;      ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "1234054C01203A3B"), true);
-    assert_string_equal(librds_get_ps(&ctx->rds), ctx->ps);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "1234054C01203A3B"), true);
-
-    expect_function_call(callback_ps);
-    snprintf(ctx->ps, sizeof(ctx->ps), ":;<=    ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "1234054901203C3D"), true);
-    assert_string_equal(librds_get_ps(&ctx->rds), ctx->ps);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "1234054901203C3D"), true);
-
-    expect_function_call(callback_ps);
-    snprintf(ctx->ps, sizeof(ctx->ps), ":;<=>?  ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "1234054A01203E3F"), true);
-    assert_string_equal(librds_get_ps(&ctx->rds), ctx->ps);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "1234054A01203E3F"), true);
-
-    expect_function_call(callback_ps);
-    snprintf(ctx->ps, sizeof(ctx->ps), ":;<=>?JK");
-    assert_int_equal(librds_parse_string(&ctx->rds, "1234054F01204A4B"), true);
-    assert_string_equal(librds_get_ps(&ctx->rds), ctx->ps);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "1234054F01204A4B"), true);
+    check_ps(ctx, "1234054C01203A3B", L":;      ");
+    check_ps(ctx, "1234054901203C3D", L":;<=    ");
+    check_ps(ctx, "1234054A01203E3F", L":;<=>?  ");
+    check_ps(ctx, "1234054F01204AF2", L":;<=>?Jæ");
 
     librds_clear(&ctx->rds);
-    assert_string_equal(librds_get_ps(&ctx->rds), "        ");
+    assert_rds_string_equal(librds_string_get_content(librds_get_ps(&ctx->rds)), L"        ");
 }
 
 static void
@@ -494,16 +486,16 @@ verification_ps_invalid(void **state)
     test_context_t *ctx = *state;
     librds_register_ps(&ctx->rds, callback_ps);
 
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
 
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD054822756645FF"), true); /* "fE      " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD054921824449FF"), true); /* "  x9    " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD054AE3054F20FF"), true); /* "    O   " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD09833D9D4449FF"), true); /* "      DI" */
 
-    assert_string_equal(librds_get_ps(&ctx->rds), "        ");
-    assert_int_equal(librds_get_ps_available(&ctx->rds), false);
+    assert_int_equal(librds_string_get_available(librds_get_ps(&ctx->rds)), false);
+    assert_rds_string_equal(librds_string_get_content(librds_get_ps(&ctx->rds)), L"        ");
 }
 
 static void
@@ -512,16 +504,16 @@ verification_ps_invalid_pos(void **state)
     test_context_t *ctx = *state;
     librds_register_ps(&ctx->rds, callback_ps);
 
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
 
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD05482275664530"), true); /* "fE      " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD05492182444930"), true); /* "  x9    " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD054AE3054F2030"), true); /* "    O   " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD09833D9D444930"), true); /* "      DI" */
 
-    assert_string_equal(librds_get_ps(&ctx->rds), "        ");
-    assert_int_equal(librds_get_ps_available(&ctx->rds), false);
+    assert_rds_string_equal(librds_string_get_content(librds_get_ps(&ctx->rds)), L"        ");
+    assert_int_equal(librds_string_get_available(librds_get_ps(&ctx->rds)), false);
 }
 
 static void
@@ -530,16 +522,16 @@ verification_ps_invalid_data(void **state)
     test_context_t *ctx = *state;
     librds_register_ps(&ctx->rds, callback_ps);
 
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
 
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD05482275664503"), true); /* "fE      " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD05492182444903"), true); /* "  x9    " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD054AE3054F2003"), true); /* "    O   " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD09833D9D444903"), true); /* "      DI" */
 
-    assert_string_equal(librds_get_ps(&ctx->rds), "        ");
-    assert_int_equal(librds_get_ps_available(&ctx->rds), false);
+    assert_rds_string_equal(librds_string_get_content(librds_get_ps(&ctx->rds)), L"        ");
+    assert_int_equal(librds_string_get_available(librds_get_ps(&ctx->rds)), false);
 }
 
 static void
@@ -547,9 +539,9 @@ verification_ps_with_small_errors(void **state)
 {
     test_context_t *ctx = *state;
 
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_SMALL);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_SMALL);
-    
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_SMALL);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_SMALL);
+
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD04C0E305006473"), true); /* " d      " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD0548E305524100"), true); /* "RA      " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD0548E3054F350E"), true); /* "O5      " */
@@ -561,8 +553,9 @@ verification_ps_with_small_errors(void **state)
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD052E23B2372034"), true); /* "    7   " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD054F2182372000"), true); /* "      7 " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD09833D9D444901"), true); /* "      DI" */
-    
-    assert_string_equal(librds_get_ps(&ctx->rds), "RADIO DI");
+
+    assert_rds_string_equal(librds_string_get_content(librds_get_ps(&ctx->rds)), L"RADIO DI");
+    assert_int_equal(librds_string_get_available(librds_get_ps(&ctx->rds)), true);
 }
 
 static void
@@ -570,9 +563,9 @@ verification_ps_with_large_errors(void **state)
 {
     test_context_t *ctx = *state;
 
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
-    
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
+
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD04C0E305006473"), true); /* " d      " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD0548E305524100"), true); /* "RA      " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD0548E3054F350E"), true); /* "O5      " */
@@ -584,8 +577,9 @@ verification_ps_with_large_errors(void **state)
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD052E23B2372034"), true); /* "    7   " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD054F2182372000"), true); /* "      7 " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD09833D9D444901"), true); /* "      DI" */
-    
-    assert_string_equal(librds_get_ps(&ctx->rds), "O5DIO DI");
+
+    assert_rds_string_equal(librds_string_get_content(librds_get_ps(&ctx->rds)), L"O5DIO DI");
+    assert_int_equal(librds_string_get_available(librds_get_ps(&ctx->rds)), true);
 }
 
 static void
@@ -593,10 +587,10 @@ verification_ps_progressive(void **state)
 {
     test_context_t *ctx = *state;
 
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
-    librds_set_progressive(&ctx->rds, LIBRDS_STRING_PS, true);
-    
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_progressive(&ctx->rds, LIBRDS_TEXT_PS, true);
+
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD04C0E305006473"), true); /* " d      " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD0548E305524100"), true); /* "RA      " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD0548E3054F350E"), true); /* "O5      " */
@@ -608,278 +602,99 @@ verification_ps_progressive(void **state)
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD052E23B2372034"), true); /* "    7   " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD054F2182372000"), true); /* "      7 " */
     assert_int_equal(librds_parse_string(&ctx->rds, "34DD09833D9D444901"), true); /* "      DI" */
-    
-    assert_string_equal(librds_get_ps(&ctx->rds), "RADIO 7 ");
+
+    assert_rds_string_equal(librds_string_get_content(librds_get_ps(&ctx->rds)), L"RADIO 7 ");
+    assert_int_equal(librds_string_get_available(librds_get_ps(&ctx->rds)), true);
+}
+
+static void
+check_rt(test_context_t   *ctx,
+         const char       *rds_input,
+         const wchar_t    *expected,
+         librds_rt_flag_t  flag)
+{
+    expect_function_call(callback_rt);
+    swprintf(ctx->rt[flag], sizeof(ctx->rt[flag]), expected);
+    assert_int_equal(librds_parse_string(&ctx->rds, rds_input), true);
+    assert_rds_string_equal(librds_string_get_content(librds_get_rt(&ctx->rds, flag)), ctx->rt[flag]);
+
+    /* Same value, no callback */
+    assert_int_equal(librds_parse_string(&ctx->rds, rds_input), true);
+
+    assert_int_equal(librds_string_get_available(librds_get_rt(&ctx->rds, flag)), true);
 }
 
 static void
 verification_rt_a(void **state)
 {
     test_context_t *ctx = *state;
-    const char empty[] = "                                                                ";
+    const wchar_t empty[] = L"                                                                ";
     librds_register_rt(&ctx->rds, callback_rt);
 
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), empty);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), empty);
+    check_rt(ctx, "34DB25404B52445000", L"KRDP                                                            ", LIBRDS_RT_FLAG_A);
+    check_rt(ctx, "34DB254120506C6F00", L"KRDP Plo                                                        ", LIBRDS_RT_FLAG_A);
+    check_rt(ctx, "34DB2542636B207500", L"KRDP Plock u                                                    ", LIBRDS_RT_FLAG_A);
+    check_rt(ctx, "34DB25436C2E205400", L"KRDP Plock ul. T                                                ", LIBRDS_RT_FLAG_A);
+    check_rt(ctx, "34DB2544756D736B00", L"KRDP Plock ul. Tumsk                                            ", LIBRDS_RT_FLAG_A);
+    check_rt(ctx, "34DB25456120332000", L"KRDP Plock ul. Tumska 3                                         ", LIBRDS_RT_FLAG_A);
+    check_rt(ctx, "34DB25462849207000", L"KRDP Plock ul. Tumska 3 (I p                                    ", LIBRDS_RT_FLAG_A);
+    check_rt(ctx, "34DB25476965747200", L"KRDP Plock ul. Tumska 3 (I pietr                                ", LIBRDS_RT_FLAG_A);
+    check_rt(ctx, "34DB25486F29205400", L"KRDP Plock ul. Tumska 3 (I pietro) T                            ", LIBRDS_RT_FLAG_A);
+    check_rt(ctx, "34DB2549656C206400", L"KRDP Plock ul. Tumska 3 (I pietro) Tel d                        ", LIBRDS_RT_FLAG_A);
+    check_rt(ctx, "34DB254A6F20726500", L"KRDP Plock ul. Tumska 3 (I pietro) Tel do re                    ", LIBRDS_RT_FLAG_A);
+    check_rt(ctx, "34DB254B64616B6300", L"KRDP Plock ul. Tumska 3 (I pietro) Tel do redakc                ", LIBRDS_RT_FLAG_A);
+    check_rt(ctx, "34DB254C6A693A2000", L"KRDP Plock ul. Tumska 3 (I pietro) Tel do redakcji:             ", LIBRDS_RT_FLAG_A);
+    check_rt(ctx, "34DB254D3234203200", L"KRDP Plock ul. Tumska 3 (I pietro) Tel do redakcji: 24 2        ", LIBRDS_RT_FLAG_A);
+    check_rt(ctx, "34DB254E3634203600", L"KRDP Plock ul. Tumska 3 (I pietro) Tel do redakcji: 24 264 6    ", LIBRDS_RT_FLAG_A);
+    check_rt(ctx, "34DB254F3420303000", L"KRDP Plock ul. Tumska 3 (I pietro) Tel do redakcji: 24 264 64 00", LIBRDS_RT_FLAG_A);
 
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[0], sizeof(ctx->rt[0]), "KRDP                                                            ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25404B52445000"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), ctx->rt[0]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25404B52445000"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[0], sizeof(ctx->rt[0]), "KRDP Plo                                                        ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB254120506C6F00"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), ctx->rt[0]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB254120506C6F00"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[0], sizeof(ctx->rt[0]), "KRDP Plock u                                                    ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB2542636B207500"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), ctx->rt[0]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB2542636B207500"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[0], sizeof(ctx->rt[0]), "KRDP Plock ul. T                                                ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25436C2E205400"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), ctx->rt[0]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25436C2E205400"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[0], sizeof(ctx->rt[0]), "KRDP Plock ul. Tumsk                                            ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB2544756D736B00"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), ctx->rt[0]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB2544756D736B00"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[0], sizeof(ctx->rt[0]), "KRDP Plock ul. Tumska 3                                         ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25456120332000"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), ctx->rt[0]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25456120332000"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[0], sizeof(ctx->rt[0]), "KRDP Plock ul. Tumska 3 (I p                                    ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25462849207000"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), ctx->rt[0]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25462849207000"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[0], sizeof(ctx->rt[0]), "KRDP Plock ul. Tumska 3 (I pietr                                ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25476965747200"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), ctx->rt[0]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25476965747200"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[0], sizeof(ctx->rt[0]), "KRDP Plock ul. Tumska 3 (I pietro) T                            ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25486F29205400"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), ctx->rt[0]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25486F29205400"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[0], sizeof(ctx->rt[0]), "KRDP Plock ul. Tumska 3 (I pietro) Tel d                        ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB2549656C206400"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), ctx->rt[0]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB2549656C206400"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[0], sizeof(ctx->rt[0]), "KRDP Plock ul. Tumska 3 (I pietro) Tel do re                    ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB254A6F20726500"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), ctx->rt[0]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB254A6F20726500"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[0], sizeof(ctx->rt[0]), "KRDP Plock ul. Tumska 3 (I pietro) Tel do redakc                ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB254B64616B6300"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), ctx->rt[0]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB254B64616B6300"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[0], sizeof(ctx->rt[0]), "KRDP Plock ul. Tumska 3 (I pietro) Tel do redakcji:             ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB254C6A693A2000"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), ctx->rt[0]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB254C6A693A2000"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[0], sizeof(ctx->rt[0]), "KRDP Plock ul. Tumska 3 (I pietro) Tel do redakcji: 24 2        ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB254D3234203200"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), ctx->rt[0]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB254D3234203200"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[0], sizeof(ctx->rt[0]), "KRDP Plock ul. Tumska 3 (I pietro) Tel do redakcji: 24 264 6    ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB254E3634203600"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), ctx->rt[0]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB254E3634203600"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[0], sizeof(ctx->rt[0]), "KRDP Plock ul. Tumska 3 (I pietro) Tel do redakcji: 24 264 64 00");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB254F3420303000"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), ctx->rt[0]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB254F3420303000"), true);
-    
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), empty);
+    assert_rds_string_equal(librds_string_get_content(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B)), empty);
 
     librds_clear(&ctx->rds);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), empty);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), empty);
+    assert_rds_string_equal(librds_string_get_content(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A)), empty);
+    assert_rds_string_equal(librds_string_get_content(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B)), empty);
 }
 
 static void
 verification_rt_b(void **state)
 {
     test_context_t *ctx = *state;
-    const char empty[] = "                                                                ";
-
+    const wchar_t empty[] = L"                                                                ";
     librds_register_rt(&ctx->rds, callback_rt);
 
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), empty);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), empty);
+    check_rt(ctx, "34DB25504B52445000", L"KRDP                                                            ", LIBRDS_RT_FLAG_B);
+    check_rt(ctx, "34DB255120506C6F00", L"KRDP Plo                                                        ", LIBRDS_RT_FLAG_B);
+    check_rt(ctx, "34DB2552636B207500", L"KRDP Plock u                                                    ", LIBRDS_RT_FLAG_B);
+    check_rt(ctx, "34DB25536C2E205400", L"KRDP Plock ul. T                                                ", LIBRDS_RT_FLAG_B);
+    check_rt(ctx, "34DB2554756D736B00", L"KRDP Plock ul. Tumsk                                            ", LIBRDS_RT_FLAG_B);
+    check_rt(ctx, "34DB25556120332000", L"KRDP Plock ul. Tumska 3                                         ", LIBRDS_RT_FLAG_B);
+    check_rt(ctx, "34DB25562849207000", L"KRDP Plock ul. Tumska 3 (I p                                    ", LIBRDS_RT_FLAG_B);
+    check_rt(ctx, "34DB25576965747200", L"KRDP Plock ul. Tumska 3 (I pietr                                ", LIBRDS_RT_FLAG_B);
+    check_rt(ctx, "34DB25586F29205400", L"KRDP Plock ul. Tumska 3 (I pietro) T                            ", LIBRDS_RT_FLAG_B);
+    check_rt(ctx, "34DB2559656C206400", L"KRDP Plock ul. Tumska 3 (I pietro) Tel d                        ", LIBRDS_RT_FLAG_B);
+    check_rt(ctx, "34DB255A6F20726500", L"KRDP Plock ul. Tumska 3 (I pietro) Tel do re                    ", LIBRDS_RT_FLAG_B);
+    check_rt(ctx, "34DB255B64616B6300", L"KRDP Plock ul. Tumska 3 (I pietro) Tel do redakc                ", LIBRDS_RT_FLAG_B);
+    check_rt(ctx, "34DB255C6A693A2000", L"KRDP Plock ul. Tumska 3 (I pietro) Tel do redakcji:             ", LIBRDS_RT_FLAG_B);
+    check_rt(ctx, "34DB255D3234203200", L"KRDP Plock ul. Tumska 3 (I pietro) Tel do redakcji: 24 2        ", LIBRDS_RT_FLAG_B);
+    check_rt(ctx, "34DB255E3634203600", L"KRDP Plock ul. Tumska 3 (I pietro) Tel do redakcji: 24 264 6    ", LIBRDS_RT_FLAG_B);
+    check_rt(ctx, "34DB255F3420303000", L"KRDP Plock ul. Tumska 3 (I pietro) Tel do redakcji: 24 264 64 00", LIBRDS_RT_FLAG_B);
 
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[1], sizeof(ctx->rt[1]), "KRDP                                                            ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25504B52445000"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), ctx->rt[1]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25504B52445000"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[1], sizeof(ctx->rt[1]), "KRDP Plo                                                        ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB255120506C6F00"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), ctx->rt[1]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB255120506C6F00"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[1], sizeof(ctx->rt[1]), "KRDP Plock u                                                    ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB2552636B207500"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), ctx->rt[1]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB2552636B207500"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[1], sizeof(ctx->rt[1]), "KRDP Plock ul. T                                                ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25536C2E205400"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), ctx->rt[1]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25536C2E205400"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[1], sizeof(ctx->rt[1]), "KRDP Plock ul. Tumsk                                            ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB2554756D736B00"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), ctx->rt[1]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB2554756D736B00"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[1], sizeof(ctx->rt[1]), "KRDP Plock ul. Tumska 3                                         ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25556120332000"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), ctx->rt[1]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25556120332000"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[1], sizeof(ctx->rt[1]), "KRDP Plock ul. Tumska 3 (I p                                    ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25562849207000"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), ctx->rt[1]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25562849207000"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[1], sizeof(ctx->rt[1]), "KRDP Plock ul. Tumska 3 (I pietr                                ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25576965747200"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), ctx->rt[1]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25576965747200"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[1], sizeof(ctx->rt[1]), "KRDP Plock ul. Tumska 3 (I pietro) T                            ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25586F29205400"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), ctx->rt[1]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB25586F29205400"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[1], sizeof(ctx->rt[1]), "KRDP Plock ul. Tumska 3 (I pietro) Tel d                        ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB2559656C206400"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), ctx->rt[1]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB2559656C206400"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[1], sizeof(ctx->rt[1]), "KRDP Plock ul. Tumska 3 (I pietro) Tel do re                    ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB255A6F20726500"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), ctx->rt[1]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB255A6F20726500"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[1], sizeof(ctx->rt[1]), "KRDP Plock ul. Tumska 3 (I pietro) Tel do redakc                ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB255B64616B6300"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), ctx->rt[1]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB255B64616B6300"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[1], sizeof(ctx->rt[1]), "KRDP Plock ul. Tumska 3 (I pietro) Tel do redakcji:             ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB255C6A693A2000"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), ctx->rt[1]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB255C6A693A2000"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[1], sizeof(ctx->rt[1]), "KRDP Plock ul. Tumska 3 (I pietro) Tel do redakcji: 24 2        ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB255D3234203200"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), ctx->rt[1]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB255D3234203200"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[1], sizeof(ctx->rt[1]), "KRDP Plock ul. Tumska 3 (I pietro) Tel do redakcji: 24 264 6    ");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB255E3634203600"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), ctx->rt[1]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB255E3634203600"), true);
-    
-    expect_function_call(callback_rt);
-    snprintf(ctx->rt[1], sizeof(ctx->rt[1]), "KRDP Plock ul. Tumska 3 (I pietro) Tel do redakcji: 24 264 64 00");
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB255F3420303000"), true);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), ctx->rt[1]);
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB255F3420303000"), true);
-
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), empty);
+    assert_rds_string_equal(librds_string_get_content(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A)), empty);
 
     librds_clear(&ctx->rds);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), empty);
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), empty);
+    assert_rds_string_equal(librds_string_get_content(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A)), empty);
+    assert_rds_string_equal(librds_string_get_content(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B)), empty);
 }
 
 static void
 verification_rt_invalid(void **state)
 {
     test_context_t *ctx = *state;
-    const char empty[] = "                                                                ";
+    const wchar_t empty[] = L"                                                                ";
     librds_register_rt(&ctx->rds, callback_rt);
 
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
 
     assert_int_equal(librds_parse_string(&ctx->rds, "34DB25404B524450FF"), true);
     assert_int_equal(librds_parse_string(&ctx->rds, "34DB254120506C6FFF"), true);
@@ -898,19 +713,19 @@ verification_rt_invalid(void **state)
     assert_int_equal(librds_parse_string(&ctx->rds, "34DB254E36342036FF"), true);
     assert_int_equal(librds_parse_string(&ctx->rds, "34DB254F34203030FF"), true);
 
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), empty);
-    assert_int_equal(librds_get_rt_available(&ctx->rds, LIBRDS_RT_FLAG_A), false);
+    assert_int_equal(librds_string_get_available(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A)), false);
+    assert_rds_string_equal(librds_string_get_content(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A)), empty);
 }
 
 static void
 verification_rt_invalid_pos(void **state)
 {
     test_context_t *ctx = *state;
-    const char empty[] = "                                                                ";
+    const wchar_t empty[] = L"                                                                ";
     librds_register_rt(&ctx->rds, callback_rt);
 
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
 
     assert_int_equal(librds_parse_string(&ctx->rds, "34DB25404B52445030"), true);
     assert_int_equal(librds_parse_string(&ctx->rds, "34DB254120506C6F30"), true);
@@ -929,19 +744,19 @@ verification_rt_invalid_pos(void **state)
     assert_int_equal(librds_parse_string(&ctx->rds, "34DB254E3634203630"), true);
     assert_int_equal(librds_parse_string(&ctx->rds, "34DB254F3420303030"), true);
 
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), empty);
-    assert_int_equal(librds_get_rt_available(&ctx->rds, LIBRDS_RT_FLAG_A), false);
+    assert_int_equal(librds_string_get_available(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A)), false);
+    assert_rds_string_equal(librds_string_get_content(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A)), empty);
 }
 
 static void
 verification_rt_invalid_data(void **state)
 {
     test_context_t *ctx = *state;
-    const char empty[] = "                                                                ";
+    const wchar_t empty[] = L"                                                                ";
     librds_register_rt(&ctx->rds, callback_rt);
 
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
 
     assert_int_equal(librds_parse_string(&ctx->rds, "34DB25404B5244500F"), true);
     assert_int_equal(librds_parse_string(&ctx->rds, "34DB254120506C6F0F"), true);
@@ -960,8 +775,8 @@ verification_rt_invalid_data(void **state)
     assert_int_equal(librds_parse_string(&ctx->rds, "34DB254E363420360F"), true);
     assert_int_equal(librds_parse_string(&ctx->rds, "34DB254F342030300F"), true);
 
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), empty);
-    assert_int_equal(librds_get_rt_available(&ctx->rds, LIBRDS_RT_FLAG_A), false);
+    assert_int_equal(librds_string_get_available(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A)), false);
+    assert_rds_string_equal(librds_string_get_content(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A)), empty);
 }
 
 static void
@@ -971,27 +786,24 @@ verification_rt_empty(void **state)
     librds_register_rt(&ctx->rds, callback_rt);
 
     expect_function_call(callback_rt);
-#pragma GCC diagnostic ignored "-Wformat-zero-length"
-    snprintf(ctx->rt[0], sizeof(ctx->rt[1]), "");
-#pragma GCC diagnostic warning "-Wformat-zero-length"
+    swprintf(ctx->rt[0], sizeof(ctx->rt[0]), L"");
     assert_int_equal(librds_parse_string(&ctx->rds, "34DB25000D202020"), true);
 
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), "");
-    assert_int_equal(librds_get_rt_available(&ctx->rds, LIBRDS_RT_FLAG_A), true);
+    assert_int_equal(librds_string_get_available(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A)), true);
+    assert_rds_string_equal(librds_string_get_content(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A)), L"");
 }
 
 static void
 verification_rt_empty_with_error(void **state)
 {
     test_context_t *ctx = *state;
+    const wchar_t empty[] = L"                                                                ";
     librds_register_rt(&ctx->rds, callback_rt);
 
-#pragma GCC diagnostic ignored "-Wformat-zero-length"
-    snprintf(ctx->rt[0], sizeof(ctx->rt[1]), "");
-#pragma GCC diagnostic warning "-Wformat-zero-length"
     assert_int_equal(librds_parse_string(&ctx->rds, "34DB25000D20202010"), true);
 
-    assert_int_equal(librds_get_rt_available(&ctx->rds, LIBRDS_RT_FLAG_A), false);
+    assert_int_equal(librds_string_get_available(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A)), false);
+    assert_rds_string_equal(librds_string_get_content(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A)), empty);
 }
 
 const struct CMUnitTest tests[] =

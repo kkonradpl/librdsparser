@@ -29,23 +29,22 @@ librds_parse_string_chunk(librds_t              *context,
                           const librds_error_t   errors,
                           uint8_t                position,
                           librds_block_t         data_block,
-                          librds_string_t        string,
-                          char                  *output,
-                          librds_string_error_t *output_errors)
+                          librds_text_t          text,
+                          librds_string_t       *string)
 {
-    if (errors[LIBRDS_BLOCK_B] <= context->correction[string][LIBRDS_BLOCK_TYPE_INFO] &&
-        errors[data_block] <= context->correction[string][LIBRDS_BLOCK_TYPE_DATA])
+    if (errors[LIBRDS_BLOCK_B] <= context->correction[text][LIBRDS_BLOCK_TYPE_INFO] &&
+        errors[data_block] <= context->correction[text][LIBRDS_BLOCK_TYPE_DATA])
     {
         char block[2];
         block[0] = data[data_block] >> 8;
         block[1] = (uint8_t)data[data_block];
 
-        return librds_string_update(output,
-                                    output_errors,
+        return librds_string_update(string,
                                     block,
-                                    librds_string_error(errors[LIBRDS_BLOCK_B], errors[data_block]),
+                                    errors[LIBRDS_BLOCK_B],
+                                    errors[data_block],
                                     position,
-                                    context->progressive[string],
+                                    context->progressive[text],
                                     true);
     }
 
@@ -152,16 +151,14 @@ librds_parse_group0(librds_t             *context,
                                         errors,
                                         position,
                                         LIBRDS_BLOCK_D,
-                                        LIBRDS_STRING_PS,
-                                        context->ps,
-                                        context->ps_errors);
+                                        LIBRDS_TEXT_PS,
+                                        context->ps);
 
     if (changed &&
         context->callback_ps)
     {
         context->callback_ps(context->ps,
-                                context->ps_errors,
-                                context->user_data);
+                             context->user_data);
     }
 }
 
@@ -202,9 +199,9 @@ librds_parse_group2(librds_t             *context,
         rt_flag != context->last_rt_flag)
     {
         if (context->last_rt_flag != -1 &&
-            librds_get_rt_available(context, rt_flag))
+            librds_string_get_available(context->rt[rt_flag]))
         {
-            librds_string_clear(context->rt[rt_flag], context->rt_errors[rt_flag], LIBRDS_RT_LENGTH);
+            librds_string_clear(context->rt[rt_flag]);
             changed = true;
         }
 
@@ -227,18 +224,16 @@ librds_parse_group2(librds_t             *context,
                                              errors,
                                              position,
                                              LIBRDS_BLOCK_C,
-                                             LIBRDS_STRING_RT,
-                                             context->rt[rt_flag],
-                                             context->rt_errors[rt_flag]);
+                                             LIBRDS_TEXT_RT,
+                                             context->rt[rt_flag]);
 
         changed |= librds_parse_string_chunk(context,
                                              data,
                                              errors,
                                              position + 2,
                                              LIBRDS_BLOCK_D,
-                                             LIBRDS_STRING_RT,
-                                             context->rt[rt_flag],
-                                             context->rt_errors[rt_flag]);
+                                             LIBRDS_TEXT_RT,
+                                             context->rt[rt_flag]);
     }
     else
     {
@@ -248,16 +243,14 @@ librds_parse_group2(librds_t             *context,
                                              errors,
                                              position,
                                              LIBRDS_BLOCK_D,
-                                             LIBRDS_STRING_RT,
-                                             context->rt[rt_flag],
-                                             context->rt_errors[rt_flag]);
+                                             LIBRDS_TEXT_RT,
+                                             context->rt[rt_flag]);
     }
 
     if (changed &&
         context->callback_rt)
     {
         context->callback_rt(context->rt[rt_flag],
-                             context->rt_errors[rt_flag],
                              rt_flag,
                              context->user_data);
     }

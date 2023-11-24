@@ -102,14 +102,6 @@ callback_ms(bool  ms,
 }
 
 static void
-callback_af(uint8_t  af,
-            void    *user_data)
-{
-    (void)user_data;
-    function_called();
-}
-
-static void
 callback_ecc(uint8_t  ecc,
              void    *user_data)
 {
@@ -118,19 +110,25 @@ callback_ecc(uint8_t  ecc,
 }
 
 static void
-callback_ps(const char                  *ps,
-            const librds_string_error_t *errors,
-            void                        *user_data)
+callback_af(uint8_t  af,
+            void    *user_data)
 {
     (void)user_data;
     function_called();
 }
 
 static void
-callback_rt(const char                  *rt,
-            const librds_string_error_t *errors,
-            librds_rt_flag_t             flag,
-            void                        *user_data)
+callback_ps(const librds_string_t *ps,
+            void                  *user_data)
+{
+    (void)user_data;
+    function_called();
+}
+
+static void
+callback_rt(const librds_string_t *rt,
+            librds_rt_flag_t       flag,
+            void                  *user_data)
 {
     (void)user_data;
     function_called();
@@ -148,6 +146,7 @@ librds_test_reset(void **state)
     assert_int_equal(librds_get_ta(&ctx->rds), -1);
     assert_int_equal(librds_get_ms(&ctx->rds), -1);
     assert_int_equal(librds_get_pty(&ctx->rds), -1);
+    assert_int_equal(librds_get_ecc(&ctx->rds), -1);
 
     const librds_af_t *af = librds_get_af(&ctx->rds);
     for (uint8_t i = 0; i < LIBRDS_AF_BUFFER_SIZE; i++)
@@ -155,28 +154,35 @@ librds_test_reset(void **state)
         assert_int_equal((*af)[i], 0);
     }
 
-    assert_int_equal(librds_get_ecc(&ctx->rds), -1);
-    assert_string_equal(librds_get_ps(&ctx->rds), "        ");
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A), "                                                                ");
-    assert_string_equal(librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B), "                                                                ");
-
+    const librds_string_t *string;
+    const librds_string_char_t *content;
     const librds_string_error_t *errors;
 
-    errors = librds_get_ps_errors(&ctx->rds);
+    string = librds_get_ps(&ctx->rds);
+    content = librds_string_get_content(string);
+    errors = librds_string_get_errors(string);
     for (uint8_t i = 0; i < LIBRDS_PS_LENGTH; i++)
     {
+        assert_int_equal(content[i], ' ');
+        printf("%d \n", errors[i]);
         assert_int_equal(errors[i], LIBRDS_STRING_ERROR_UNCORRECTABLE);
     }
 
-    errors = librds_get_rt_errors(&ctx->rds, LIBRDS_RT_FLAG_A);
+    string = librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_A);
+    content = librds_string_get_content(string);
+    errors = librds_string_get_errors(string);
     for (uint8_t i = 0; i < LIBRDS_RT_LENGTH; i++)
     {
+        assert_int_equal(content[i], ' ');
         assert_int_equal(errors[i], LIBRDS_STRING_ERROR_UNCORRECTABLE);
     }
 
-    errors = librds_get_rt_errors(&ctx->rds, LIBRDS_RT_FLAG_B);
+    string = librds_get_rt(&ctx->rds, LIBRDS_RT_FLAG_B);
+    content = librds_string_get_content(string);
+    errors = librds_string_get_errors(string);
     for (uint8_t i = 0; i < LIBRDS_RT_LENGTH; i++)
     {
+        assert_int_equal(content[i], ' ');
         assert_int_equal(errors[i], LIBRDS_STRING_ERROR_UNCORRECTABLE);
     }
 }
@@ -267,30 +273,30 @@ static void
 librds_test_ps_info_correction(void **state)
 {
     test_context_t *ctx = *state;
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_NONE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_SMALL);
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_SMALL);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_LARGE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_NONE);
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_NONE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_UNCORRECTABLE);
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_LARGE);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_NONE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_SMALL);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_SMALL);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_NONE);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_NONE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_UNCORRECTABLE);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_LARGE);
 }
 
 static void
 librds_test_ps_data_correction(void **state)
 {
     test_context_t *ctx = *state;
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_NONE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_SMALL);
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_SMALL);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_LARGE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_NONE);
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_NONE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_UNCORRECTABLE);
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_PS, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_LARGE);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_NONE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_SMALL);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_SMALL);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_NONE);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_NONE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_UNCORRECTABLE);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_PS, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_LARGE);
 }
 
 
@@ -298,79 +304,52 @@ static void
 librds_test_rt_info_correction(void **state)
 {
     test_context_t *ctx = *state;
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_NONE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_SMALL);
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_SMALL);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_LARGE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_NONE);
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_NONE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_UNCORRECTABLE);
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_LARGE);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_NONE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_SMALL);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_SMALL);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_LARGE);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_NONE);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_NONE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_INFO, LIBRDS_BLOCK_ERROR_UNCORRECTABLE);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_INFO), LIBRDS_BLOCK_ERROR_LARGE);
 }
 
 static void
 librds_test_rt_data_correction(void **state)
 {
     test_context_t *ctx = *state;
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_NONE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_SMALL);
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_SMALL);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_LARGE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_NONE);
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_NONE);
-    librds_set_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_UNCORRECTABLE);
-    assert_int_equal(librds_get_correction(&ctx->rds, LIBRDS_STRING_RT, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_LARGE);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_NONE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_SMALL);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_SMALL);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_LARGE);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_LARGE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_NONE);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_NONE);
+    librds_set_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_DATA, LIBRDS_BLOCK_ERROR_UNCORRECTABLE);
+    assert_int_equal(librds_get_text_correction(&ctx->rds, LIBRDS_TEXT_RT, LIBRDS_BLOCK_TYPE_DATA), LIBRDS_BLOCK_ERROR_LARGE);
 }
 
 static void
 librds_test_ps_progressive(void **state)
 {
     test_context_t *ctx = *state;
-    assert_int_equal(librds_get_progressive(&ctx->rds, LIBRDS_STRING_PS), false);
-    librds_set_progressive(&ctx->rds, LIBRDS_STRING_PS, true);
-    assert_int_equal(librds_get_progressive(&ctx->rds, LIBRDS_STRING_PS), true);
-    librds_set_progressive(&ctx->rds, LIBRDS_STRING_PS, false);
-    assert_int_equal(librds_get_progressive(&ctx->rds, LIBRDS_STRING_PS), false);
+    assert_int_equal(librds_get_text_progressive(&ctx->rds, LIBRDS_TEXT_PS), false);
+    librds_set_text_progressive(&ctx->rds, LIBRDS_TEXT_PS, true);
+    assert_int_equal(librds_get_text_progressive(&ctx->rds, LIBRDS_TEXT_PS), true);
+    librds_set_text_progressive(&ctx->rds, LIBRDS_TEXT_PS, false);
+    assert_int_equal(librds_get_text_progressive(&ctx->rds, LIBRDS_TEXT_PS), false);
 }
 
 static void
 librds_test_rt_progressive(void **state)
 {
     test_context_t *ctx = *state;
-    assert_int_equal(librds_get_progressive(&ctx->rds, LIBRDS_STRING_RT), false);
-    librds_set_progressive(&ctx->rds, LIBRDS_STRING_RT, true);
-    assert_int_equal(librds_get_progressive(&ctx->rds, LIBRDS_STRING_RT), true);
-    librds_set_progressive(&ctx->rds, LIBRDS_STRING_RT, false);
-    assert_int_equal(librds_get_progressive(&ctx->rds, LIBRDS_STRING_RT), false);
-}
-
-static void
-librds_test_ps_available(void **state)
-{
-    test_context_t *ctx = *state;
-    assert_int_equal(librds_get_ps_available(&ctx->rds), false);
-    assert_int_equal(librds_parse_string(&ctx->rds, "1234007890123458"), true);
-    assert_int_equal(librds_get_ps_available(&ctx->rds), true);
-}
-
-static void
-librds_test_rt_a_available(void **state)
-{
-    test_context_t *ctx = *state;
-    assert_int_equal(librds_get_rt_available(&ctx->rds, LIBRDS_RT_FLAG_A), false);
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB254F3420303000"), true);
-    assert_int_equal(librds_get_rt_available(&ctx->rds, LIBRDS_RT_FLAG_A), true);
-}
-
-static void
-librds_test_rt_b_available(void **state)
-{
-    test_context_t *ctx = *state;
-    assert_int_equal(librds_get_rt_available(&ctx->rds, LIBRDS_RT_FLAG_B), false);
-    assert_int_equal(librds_parse_string(&ctx->rds, "34DB255F3420303000"), true);
-    assert_int_equal(librds_get_rt_available(&ctx->rds, LIBRDS_RT_FLAG_B), true);
+    assert_int_equal(librds_get_text_progressive(&ctx->rds, LIBRDS_TEXT_RT), false);
+    librds_set_text_progressive(&ctx->rds, LIBRDS_TEXT_RT, true);
+    assert_int_equal(librds_get_text_progressive(&ctx->rds, LIBRDS_TEXT_RT), true);
+    librds_set_text_progressive(&ctx->rds, LIBRDS_TEXT_RT, false);
+    assert_int_equal(librds_get_text_progressive(&ctx->rds, LIBRDS_TEXT_RT), false);
 }
 
 static void
@@ -419,21 +398,21 @@ librds_test_register_pty(void **state)
 }
 
 static void
-librds_test_register_af(void **state)
-{
-    test_context_t *ctx = *state;
-    librds_register_af(&ctx->rds, callback_af);
-    expect_function_calls(callback_af, 2);
-    assert_int_equal(librds_parse_string(&ctx->rds, "1234007890123458"), true);
-}
-
-static void
 librds_test_register_ecc(void **state)
 {
     test_context_t *ctx = *state;
     librds_register_ecc(&ctx->rds, callback_ecc);
     expect_function_call(callback_ecc);
     assert_int_equal(librds_parse_string(&ctx->rds, "3566100000E20000"), true);
+}
+
+static void
+librds_test_register_af(void **state)
+{
+    test_context_t *ctx = *state;
+    librds_register_af(&ctx->rds, callback_af);
+    expect_function_calls(callback_af, 2);
+    assert_int_equal(librds_parse_string(&ctx->rds, "1234007890123458"), true);
 }
 
 static void
@@ -471,16 +450,13 @@ const struct CMUnitTest tests[] =
     cmocka_unit_test_setup_teardown(librds_test_rt_data_correction, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(librds_test_ps_progressive, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(librds_test_rt_progressive, test_setup, test_teardown),
-    cmocka_unit_test_setup_teardown(librds_test_ps_available, test_setup, test_teardown),
-    cmocka_unit_test_setup_teardown(librds_test_rt_a_available, test_setup, test_teardown),
-    cmocka_unit_test_setup_teardown(librds_test_rt_b_available, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(librds_test_register_pi, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(librds_test_register_tp, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(librds_test_register_ta, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(librds_test_register_ms, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(librds_test_register_pty, test_setup, test_teardown),
-    cmocka_unit_test_setup_teardown(librds_test_register_af, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(librds_test_register_ecc, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(librds_test_register_af, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(librds_test_register_ps, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(librds_test_register_rt, test_setup, test_teardown)
 };

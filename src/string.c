@@ -16,34 +16,58 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "librds.h"
-
-
-librds_string_error_t
-librds_string_error(librds_block_error_t pos_error,
-                    librds_block_error_t data_error)
-{
-    const uint8_t value = 2 * pos_error + 3 * data_error;
-    return (librds_string_error_t)(value ? value - 1 : 0);
-}
+#include "librds_private.h"
+#include "string.h"
 
 void
-librds_string_clear(char                  *string,
-                    librds_string_error_t *errors,
-                    uint8_t                length)
+librds_string_init(librds_string_t *string,
+                   uint8_t          max_length)
 {
-    for (uint8_t i = 0; i < length; i++)
+    *string = max_length;
+}
+
+static uint8_t
+librds_string_get_size(const librds_string_t *string)
+{
+    return (uint8_t)string[0];
+}
+
+uint8_t
+librds_string_get_length(const librds_string_t *string)
+{
+    const uint8_t size = librds_string_get_size(string);
+    for (uint8_t i = 0; i < size; i++)
     {
-        string[i] = ' ';
-        errors[i] = LIBRDS_STRING_ERROR_UNCORRECTABLE;
+        const librds_string_char_t *content = librds_string_get_content(string);
+        if (content[i] == '\0')
+        {
+            return i;
+        }
     }
+
+    return size;
+}
+
+const librds_string_char_t*
+librds_string_get_content(const librds_string_t *string)
+{
+    return (string + 1);
+}
+
+const uint8_t*
+librds_string_get_errors(const librds_string_t *string)
+{
+    const uint8_t size = librds_string_get_size(string);
+    return (uint8_t*)(string + 1 + size + 1);
 }
 
 bool
-librds_string_available(const librds_string_error_t *errors,
-                        uint8_t                      length)
+librds_string_get_available(const librds_string_t *string)
 {
-    for (uint8_t i = 0; i < length; i++)
+    const uint8_t size = librds_string_get_size(string);
+    const uint8_t *errors = librds_string_get_errors(string);
+
+    for (uint8_t i = 0; i < size; i++)
     {
         if (errors[i] != LIBRDS_STRING_ERROR_UNCORRECTABLE)
         {
@@ -54,53 +78,145 @@ librds_string_available(const librds_string_error_t *errors,
     return false;
 }
 
+void
+librds_string_clear(librds_string_t *string)
+{
+    const uint8_t size = librds_string_get_size(string);
+    librds_string_char_t *content = (librds_string_char_t*)librds_string_get_content(string);
+    librds_string_error_t *errors = (librds_string_error_t*)librds_string_get_errors(string);
+
+    for (uint8_t i = 0; i < size; i++)
+    {
+        content[i] = ' ';
+        errors[i] = LIBRDS_STRING_ERROR_UNCORRECTABLE;
+    }
+}
+
+static librds_string_error_t
+librds_string_calculate_error(librds_block_error_t pos_error,
+                              librds_block_error_t data_error)
+{
+    const uint8_t value = 2 * pos_error + 3 * data_error;
+    return (librds_string_error_t)(value ? value - 1 : 0);
+}
+
+static librds_string_char_t
+librds_string_convert(uint8_t input)
+{
+    if (input == '\r')
+    {
+        return '\0';
+    }
+
+#ifdef LIBRDS_DISABLE_UNICODE
+    return input;
+#else
+    const uint8_t offset = 0x20;
+    const wchar_t charset[] =
+    {
+        L' ', L'!', L'"', L'#', L'¤', L'%', L'&', L'\'',
+        L'(', L')', L'*', L'+', L',', L'-', L'.', L'/',
+        L'0', L'1', L'2', L'3', L'4', L'5', L'6', L'7',
+        L'8', L'9', L':', L';', L'<', L'=', L'>', L'?',
+        L'@', L'A', L'B', L'C', L'D', L'E', L'F', L'G',
+        L'H', L'I', L'J', L'K', L'L', L'M', L'N', L'O',
+        L'P', L'Q', L'R', L'S', L'T', L'U', L'V', L'W',
+        L'X', L'Y', L'Z', L'[', L'\\',L']', L'―', L'_',
+        L'‖', L'a', L'b', L'c', L'd', L'e', L'f', L'g',
+        L'h', L'i', L'j', L'k', L'l', L'm', L'n', L'o',
+        L'p', L'q', L'r', L's', L't', L'u', L'v', L'w',
+        L'x', L'y', L'z', L'{', L'|', L'}', L'¯', L' ',
+        L'á', L'à', L'é', L'è', L'í', L'ì', L'ó', L'ò',
+        L'ú', L'ù', L'Ñ', L'Ç', L'Ş', L'β', L'¡', L'Ĳ',
+        L'â', L'ä', L'ê', L'ë', L'î', L'ï', L'ô', L'ö',
+        L'û', L'ü', L'ñ', L'ç', L'ş', L'ǧ', L'ı', L'ĳ',
+        L'ª', L'α', L'©', L'‰', L'Ǧ', L'ě', L'ň', L'ő',
+        L'π', L'€', L'£', L'$', L'←', L'↑', L'→', L'↓',
+        L'º', L'¹', L'²', L'³', L'±', L'İ', L'ń', L'ű',
+        L'µ', L'¿', L'÷', L'°', L'¼', L'½', L'¾', L'§',
+        L'Á', L'À', L'É', L'È', L'Í', L'Ì', L'Ó', L'Ò',
+        L'Ú', L'Ù', L'Ř', L'Č', L'Š', L'Ž', L'Ð', L'Ŀ',
+        L'Â', L'Ä', L'Ê', L'Ë', L'Î', L'Ï', L'Ô', L'Ö',
+        L'Û', L'Ü', L'ř', L'č', L'š', L'ž', L'đ', L'ŀ',
+        L'Ã', L'Å', L'Æ', L'Œ', L'ŷ', L'Ý', L'Õ', L'Ø',
+        L'Þ', L'Ŋ', L'Ŕ', L'Ć', L'Ś', L'Ź', L'Ŧ', L'ð',
+        L'ã', L'å', L'æ', L'œ', L'ŵ', L'ý', L'õ', L'ø',
+        L'þ', L'ŋ', L'ŕ', L'ć', L'ś', L'ź', L'ŧ', L' '
+    };
+
+    /* TODO: Implement SO and LS2 tables (and charset detection) */
+    const wchar_t fallback_char = L' ';
+    return (input < offset ? fallback_char : charset[input - offset]);
+#endif
+}
+
 static bool
-librds_string_update_single(char                  *output,
-                            librds_string_error_t *output_errors,
-                            char                   input,
-                            librds_string_error_t  input_error,
+librds_string_update_single(librds_string_t       *string,
+                            uint8_t                input,
+                            librds_block_error_t   pos_error,
+                            librds_block_error_t   data_error,
                             uint8_t                position,
                             bool                   progressive,
                             bool                   allow_eol)
 {
-    if (output[position] == input &&
-        output_errors[position] <= input_error)
-    {
-        /* Ignore the same data with same or larger error correction */
-        return false;
-    }
+    librds_string_char_t *output = (librds_string_char_t*)librds_string_get_content(string);
+    librds_string_error_t *output_errors = (librds_string_error_t*)librds_string_get_errors(string);
+    librds_string_error_t error = librds_string_calculate_error(pos_error, data_error);
 
     if (progressive &&
-        output_errors[position] < input_error)
+        output_errors[position] < error)
     {
         /* Ignore larger correction in progressive mode */
         return false;
     }
 
-    if (allow_eol &&
-        input == '\r' &&
-        input_error == LIBRDS_STRING_ERROR_NONE)
+    if (input == '\r')
     {
-        /* End of RT message line */
-        input = '\0';
+        if (!allow_eol ||
+            pos_error != LIBRDS_BLOCK_ERROR_NONE ||
+            data_error != LIBRDS_BLOCK_ERROR_NONE)
+        {
+            /* Only error-free line endings */
+            return false;
+        }
     }
-    else if (input < 0x20 ||
-             input >= 0x7F)
+    else if (input < 0x20)
     {
         /* Not printable character */
         return false;
     }
 
-    output[position] = input;
-    output_errors[position] = input_error;
+    if (input >= 0x7F)
+    {
+        if (data_error != LIBRDS_BLOCK_ERROR_NONE)
+        {
+            /* Special characters are used rarely,
+               so use only error-free data */
+            return false;
+        }
+#ifdef LIBRDS_DISABLE_UNICODE
+        input = ' ';
+#endif
+    }
+
+    librds_string_char_t character = librds_string_convert(input);
+    if (output[position] == character &&
+        output_errors[position] <= error)
+    {
+        /* Ignore the same data with same or larger error correction */
+        return false;
+    }
+
+    output[position] = character;
+    output_errors[position] = error;
     return true;
 }
 
 bool
-librds_string_update(char                  *output,
-                     librds_string_error_t *output_errors,
+librds_string_update(librds_string_t       *string,
                      const char             input[2],
-                     librds_string_error_t  input_error,
+                     librds_block_error_t   pos_error,
+                     librds_block_error_t   data_error,
                      uint8_t                position,
                      bool                   progressive,
                      bool                   allow_eol)
@@ -110,10 +226,10 @@ librds_string_update(char                  *output,
 
     for (uint8_t i = 0; i < chunk_length; i++)
     {
-        changed |= librds_string_update_single(output,
-                                               output_errors,
+        changed |= librds_string_update_single(string,
                                                input[i],
-                                               input_error,
+                                               pos_error,
+                                               data_error,
                                                position + i,
                                                progressive,
                                                allow_eol);

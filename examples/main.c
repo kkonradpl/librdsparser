@@ -15,9 +15,10 @@
  */
 
 #include <stdio.h>
+#include <locale.h>
 #include "librds.h"
 
-const char *rds_data[] =
+static const char *rds_data[] =
 {
     "34DB054A76CD445000",
     "34DB25504A757A2000",
@@ -113,74 +114,83 @@ const char *rds_data[] =
     "34DB2542616D793A00"
 };
 
-void
+static void
 callback_pi(uint16_t  pi,
             void     *user_data)
 {
     printf("PI: %04X\n", pi);
 }
 
-void
+static void
 callback_pty(uint8_t  pty,
              void    *user_data)
 {
     printf("PTY: %d\n", pty);
 }
 
-void
+static void
 callback_tp(bool  tp,
             void *user_data)
 {
     printf("TP: %d\n", tp);
 }
 
-void
+static void
 callback_ta(bool  tp,
             void *user_data)
 {
     printf("TA: %d\n", tp);
 }
 
-void
+static void
 callback_ms(bool  tp,
             void *user_data)
 {
     printf("MS: %d\n", tp);
 }
 
-void
-callback_af(uint8_t  af,
-            void    *user_data)
-{
-    printf("AF: %d\n", af*100 + 87500);
-}
-
-void
+static void
 callback_ecc(uint8_t  ecc,
              void    *user_data)
 {
     printf("ECC: %d\n", ecc);
 }
 
-void
-callback_ps(const char                  *ps,
-            const librds_string_error_t *ps_errors,
-            void                        *user_data)
+static void
+callback_af(uint8_t  af,
+            void    *user_data)
 {
-    printf("PS: %s\n", ps);
+    printf("AF: %d\n", af*100 + 87500);
 }
 
-void
-callback_rt(const char                  *rt,
-            const librds_string_error_t *rt_errors,
-            librds_rt_flag_t             flag,
-            void                        *user_data)
+static void
+callback_ps(const librds_string_t *ps,
+            void                  *user_data)
 {
-    printf("RT%d: %s\n", flag, rt);
+    const librds_string_char_t *ps_content = librds_string_get_content(ps);
+#ifdef LIBRDS_DISABLE_UNICODE
+    printf("PS: %s\n", ps_content);
+#else
+    printf("PS: %ls\n", ps_content);
+#endif
+}
+
+static void
+callback_rt(const librds_string_t *rt,
+            librds_rt_flag_t       flag,
+            void                  *user_data)
+{
+    const librds_string_char_t *rt_content = librds_string_get_content(rt);
+#ifdef LIBRDS_DISABLE_UNICODE
+    printf("RT%d: %s\n", flag, rt_content);
+#else
+    printf("RT%d: %ls\n", flag, rt_content);
+#endif
 }
 
 int
-main(int argc, char* argv[])
+main(int   argc,
+     char* argv[])
 {
 #ifdef LIBRDS_DISABLE_HEAP
     librds_t buffer;
@@ -188,6 +198,17 @@ main(int argc, char* argv[])
     librds_t *rds = &buffer;
 #else
     librds_t *rds = librds_new();
+    if (rds == NULL)
+    {
+        return -1;
+    }
+#endif
+
+#ifndef LIBRDS_DISABLE_UNICODE
+    setlocale(LC_ALL, "");
+    printf("Version: Unicode\n");
+#else
+    printf("Version: ASCII\n");
 #endif
 
     librds_register_pi(rds, callback_pi);
