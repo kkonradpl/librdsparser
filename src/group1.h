@@ -16,9 +16,8 @@
 
 #ifndef RDSPARSER_GROUP1_H
 #define RDSPARSER_GROUP1_H
-#include "rdsparser_private.h"
+#include <librdsparser_private.h>
 
-uint8_t rdsparser_group1a_get_variant(const rdsparser_data_t data);
-uint8_t rdsparser_group1a0_get_ecc(const rdsparser_data_t data);
+void rdsparser_group1_parse(rdsparser_t *rds, const rdsparser_data_t data, const rdsparser_error_t errors, rdsparser_group_flag_t flag);
 
 #endif

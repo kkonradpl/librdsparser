@@ -16,9 +16,8 @@
 
 #ifndef RDSPARSER_GROUP2_H
 #define RDSPARSER_GROUP2_H
-#include "rdsparser_private.h"
+#include <librdsparser_private.h>
 
-uint8_t rdsparser_group2_get_rt_pos(const rdsparser_data_t data);
-rdsparser_rt_flag_t rdsparser_group2_get_rt_flag(const rdsparser_data_t data);
+void rdsparser_group2_parse(rdsparser_t *rds, const rdsparser_data_t data, const rdsparser_error_t errors, rdsparser_group_flag_t flag);
 
 #endif

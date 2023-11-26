@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include "rdsparser.h"
+#include <librdsparser.h>
 #include "parser.h"
 
 typedef struct {
@@ -111,7 +111,7 @@ callback_ecc(rdsparser_t *rds,
 
 static void
 callback_af(rdsparser_t *rds,
-            uint8_t      new_af,
+            uint32_t     new_af,
             void        *user_data)
 {
     (void)user_data;
@@ -152,7 +152,7 @@ rdsparser_test_reset(void **state)
     const rdsparser_af_t *af = rdsparser_get_af(&ctx->rds);
     for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
     {
-        assert_int_equal((*af)[i], 0);
+        assert_int_equal(af->buffer[i], 0);
     }
 
     const rdsparser_string_t *string;

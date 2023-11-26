@@ -14,10 +14,15 @@
  *  Lesser General Public License for more details.
  */
 
-#ifndef RDSPARSER_GROUP_H
-#define RDSPARSER_GROUP_H
-#include <librdsparser_private.h>
+#ifndef RDSPARSER_RDSPARSER_H
+#define RDSPARSER_RDSPARSER_H
 
-void rdsparser_group_parse(rdsparser_t *rds, const rdsparser_data_t data, const rdsparser_error_t errors);
+void rdsparser_set_pi(rdsparser_t *rds, rdsparser_pi_t pi);
+void rdsparser_set_pty(rdsparser_t *rds, rdsparser_pty_t pty);
+void rdsparser_set_tp(rdsparser_t *rds, rdsparser_tp_t tp);
+void rdsparser_set_ta(rdsparser_t *rds, rdsparser_ta_t ta);
+void rdsparser_set_ms(rdsparser_t *rds, rdsparser_ms_t ms);
+void rdsparser_set_ecc(rdsparser_t *rds, rdsparser_ecc_t ecc);
+void rdsparser_set_af(rdsparser_t *rds, uint8_t new_af);
 
 #endif

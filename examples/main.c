@@ -16,7 +16,7 @@
 
 #include <stdio.h>
 #include <locale.h>
-#include "rdsparser.h"
+#include <librdsparser.h>
 
 static const char *rds_data[] =
 {
@@ -116,57 +116,57 @@ static const char *rds_data[] =
 
 static void
 callback_pi(rdsparser_t *rds,
-            void     *user_data)
+            void        *user_data)
 {
     printf("PI: %04X\n", rdsparser_get_pi(rds));
 }
 
 static void
 callback_pty(rdsparser_t *rds,
-             void     *user_data)
+             void        *user_data)
 {
     printf("PTY: %d\n", rdsparser_get_pty(rds));
 }
 
 static void
 callback_tp(rdsparser_t *rds,
-            void     *user_data)
+            void        *user_data)
 {
     printf("TP: %d\n", rdsparser_get_tp(rds));
 }
 
 static void
 callback_ta(rdsparser_t *rds,
-            void     *user_data)
+            void        *user_data)
 {
     printf("TA: %d\n", rdsparser_get_ta(rds));
 }
 
 static void
 callback_ms(rdsparser_t *rds,
-            void     *user_data)
+            void        *user_data)
 {
     printf("MS: %d\n", rdsparser_get_ms(rds));
 }
 
 static void
 callback_ecc(rdsparser_t *rds,
-             void     *user_data)
+             void        *user_data)
 {
     printf("ECC: %d\n", rdsparser_get_ecc(rds));
 }
 
 static void
 callback_af(rdsparser_t *rds,
-            uint8_t   new_af,
-            void     *user_data)
+            uint32_t     new_af,
+            void        *user_data)
 {
-    printf("AF: %d\n", new_af*100 + 87500);
+    printf("AF: %d kHz\n", new_af);
 }
 
 static void
 callback_ps(rdsparser_t *rds,
-            void     *user_data)
+            void        *user_data)
 {
     const rdsparser_string_t *ps = rdsparser_get_ps(rds);
     const rdsparser_string_char_t *ps_content = rdsparser_string_get_content(ps);
@@ -180,7 +180,7 @@ callback_ps(rdsparser_t *rds,
 static void
 callback_rt(rdsparser_t         *rds,
             rdsparser_rt_flag_t  flag,
-            void             *user_data)
+            void                *user_data)
 {
     const rdsparser_string_t *rt = rdsparser_get_rt(rds, flag);
     const rdsparser_string_char_t *rt_content = rdsparser_string_get_content(rt);

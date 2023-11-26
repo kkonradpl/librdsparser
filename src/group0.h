@@ -16,12 +16,8 @@
 
 #ifndef RDSPARSER_GROUP0_H
 #define RDSPARSER_GROUP0_H
-#include "rdsparser_private.h"
+#include <librdsparser_private.h>
 
-bool rdsparser_group0_get_ta(const rdsparser_data_t data);
-bool rdsparser_group0_get_ms(const rdsparser_data_t data);
-uint8_t rdsparser_group0_get_af1(const rdsparser_data_t data);
-uint8_t rdsparser_group0_get_af2(const rdsparser_data_t data);
-uint8_t rdsparser_group0_get_ps_pos(const rdsparser_data_t data);
+void rdsparser_group0_parse(rdsparser_t *rds, const rdsparser_data_t data, const rdsparser_error_t errors, rdsparser_group_flag_t flag);
 
 #endif

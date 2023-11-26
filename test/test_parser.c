@@ -21,30 +21,51 @@
 #include <cmocka.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "group1.c"
+#include "parser.c"
 
 static void
-group1a_test_get_variant(void **state)
+parser_test_get_group_2(void **state)
 {
     rdsparser_data_t data;
-    data[2] = 0x00E2;
+    data[1] = 0x2556;
 
-    assert_int_equal(rdsparser_group1a_get_variant(data), 0);
+    assert_int_equal(rdsparser_parser_get_group(data), 2);
 }
 
 static void
-group1a0_test_get_ecc(void **state)
+parser_test_get_group_15(void **state)
 {
     rdsparser_data_t data;
-    data[2] = 0x00E2;
+    data[1] = 0xF808;
 
-    assert_int_equal(rdsparser_group1a0_get_ecc(data), 0xE2);
+    assert_int_equal(rdsparser_parser_get_group(data), 15);
 }
+
+static void
+parser_test_get_flag_a(void **state)
+{
+    rdsparser_data_t data;
+    data[1] = 0xE00E;
+
+    assert_int_equal(rdsparser_parser_get_flag(data), RDSPARSER_GROUP_FLAG_A);
+}
+
+static void
+parser_test_get_flag_b(void **state)
+{
+    rdsparser_data_t data;
+    data[1] = 0xE800;
+
+    assert_int_equal(rdsparser_parser_get_flag(data), RDSPARSER_GROUP_FLAG_B);
+}
+
 
 const struct CMUnitTest tests[] =
 {
-    cmocka_unit_test_setup_teardown(group1a_test_get_variant, NULL, NULL),
-    cmocka_unit_test_setup_teardown(group1a0_test_get_ecc, NULL, NULL)
+    cmocka_unit_test_setup_teardown(parser_test_get_group_2, NULL, NULL),
+    cmocka_unit_test_setup_teardown(parser_test_get_group_15, NULL, NULL),
+    cmocka_unit_test_setup_teardown(parser_test_get_flag_a, NULL, NULL),
+    cmocka_unit_test_setup_teardown(parser_test_get_flag_b, NULL, NULL)
 };
 
 int

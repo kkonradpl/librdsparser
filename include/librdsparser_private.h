@@ -18,16 +18,21 @@
 #define RDSPARSER_PRIVATE_H
 #include <stdlib.h>
 #include <stdbool.h>
-#include "rdsparser.h"
+#include <librdsparser.h>
 
 #define RDSPARSER_STRING_SIZE(len) (1 + (len) + 1 + \
-                                 (len) / sizeof(rdsparser_string_char_t))
+                              (len) / sizeof(rdsparser_string_char_t))
 
 typedef enum rdsparser_group_flag
 {
     RDSPARSER_GROUP_FLAG_A = 0,
     RDSPARSER_GROUP_FLAG_B = 1
 } rdsparser_group_flag_t;
+
+typedef struct rdsparser_af
+{
+    uint8_t buffer[RDSPARSER_AF_BUFFER_SIZE];
+} rdsparser_af_t;
 
 struct librdsparser
 {
@@ -54,7 +59,7 @@ struct librdsparser
     void (*callback_ta)(rdsparser_t*, void*);
     void (*callback_ms)(rdsparser_t*, void*);
     void (*callback_ecc)(rdsparser_t*, void*);
-    void (*callback_af)(rdsparser_t*, uint8_t, void*);
+    void (*callback_af)(rdsparser_t*, uint32_t, void*);
     void (*callback_ps)(rdsparser_t*, void*);
     void (*callback_rt)(rdsparser_t*, rdsparser_rt_flag_t, void*);
 

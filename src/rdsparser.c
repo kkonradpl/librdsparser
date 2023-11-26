@@ -16,7 +16,7 @@
 
 #include <string.h>
 #include <stdbool.h>
-#include "rdsparser_private.h"
+#include <librdsparser_private.h>
 #include "af.h"
 #include "parser.h"
 #include "utils.h"
@@ -64,7 +64,7 @@ rdsparser_clear(rdsparser_t *rds)
     rds->ta = RDSPARSER_TA_UNKNOWN;
     rds->ms = RDSPARSER_MS_UNKNOWN;
     rds->ecc = RDSPARSER_ECC_UNKNOWN;
-    rdsparser_af_clear(rds->af);
+    rdsparser_af_clear(&rds->af);
     rdsparser_string_clear(rds->ps);
     rdsparser_string_clear(rds->rt[0]);
     rdsparser_string_clear(rds->rt[1]);
@@ -129,10 +129,38 @@ rdsparser_get_text_progressive(const rdsparser_t *rds,
     return rds->progressive[text];
 }
 
+void
+rdsparser_set_pi(rdsparser_t    *rds,
+                 rdsparser_pi_t  pi)
+{
+    if (rds->pi != pi)
+    {
+        rds->pi = pi;
+        if (rds->callback_pi)
+        {
+            rds->callback_pi(rds, rds->user_data);
+        }
+    }
+}
+
 rdsparser_pi_t
 rdsparser_get_pi(const rdsparser_t *rds)
 {
     return rds->pi;
+}
+
+void
+rdsparser_set_pty(rdsparser_t     *rds,
+                  rdsparser_pty_t  pty)
+{
+    if (rds->pty != pty)
+    {
+        rds->pty = pty;
+        if (rds->callback_pty)
+        {
+            rds->callback_pty(rds, rds->user_data);
+        }
+    }
 }
 
 rdsparser_pty_t
@@ -141,10 +169,38 @@ rdsparser_get_pty(const rdsparser_t *rds)
     return rds->pty;
 }
 
+void
+rdsparser_set_tp(rdsparser_t     *rds,
+                  rdsparser_tp_t  tp)
+{
+    if (rds->tp != tp)
+    {
+        rds->tp = tp;
+        if (rds->callback_tp)
+        {
+            rds->callback_tp(rds, rds->user_data);
+        }
+    }
+}
+
 rdsparser_tp_t
 rdsparser_get_tp(const rdsparser_t *rds)
 {
     return rds->tp;
+}
+
+void
+rdsparser_set_ta(rdsparser_t     *rds,
+                  rdsparser_ta_t  ta)
+{
+    if (rds->ta != ta)
+    {
+        rds->ta = ta;
+        if (rds->callback_ta)
+        {
+            rds->callback_ta(rds, rds->user_data);
+        }
+    }
 }
 
 rdsparser_ta_t
@@ -153,10 +209,38 @@ rdsparser_get_ta(const rdsparser_t *rds)
     return rds->ta;
 }
 
+void
+rdsparser_set_ms(rdsparser_t    *rds,
+                 rdsparser_ms_t  ms)
+{
+    if (rds->ms != ms)
+    {
+        rds->ms = ms;
+        if (rds->callback_ms)
+        {
+            rds->callback_ms(rds, rds->user_data);
+        }
+    }
+}
+
 rdsparser_ms_t
 rdsparser_get_ms(const rdsparser_t *rds)
 {
     return rds->ms;
+}
+
+void
+rdsparser_set_ecc(rdsparser_t     *rds,
+                  rdsparser_ecc_t  ecc)
+{
+    if (rds->ecc != ecc)
+    {
+        rds->ecc = ecc;
+        if (rds->callback_ecc)
+        {
+            rds->callback_ecc(rds, rds->user_data);
+        }
+    }
 }
 
 rdsparser_ecc_t
@@ -165,10 +249,22 @@ rdsparser_get_ecc(const rdsparser_t *rds)
     return rds->ecc;
 }
 
+void
+rdsparser_set_af(rdsparser_t *rds,
+                 uint8_t      new_af)
+{
+    if (rdsparser_af_add(&rds->af, new_af) &&
+        rds->callback_af)
+    {
+        const uint32_t frequency = 87500 + (uint32_t)new_af * 100;
+        rds->callback_af(rds, frequency, rds->user_data);
+    }
+}
+
 const rdsparser_af_t*
 rdsparser_get_af(const rdsparser_t *rds)
 {
-    return (const rdsparser_af_t*)&rds->af;
+    return &rds->af;
 }
 
 const rdsparser_string_t*
@@ -235,7 +331,7 @@ rdsparser_register_ecc(rdsparser_t  *rds,
 
 void
 rdsparser_register_af(rdsparser_t  *rds,
-                      void        (*callback_af)(rdsparser_t*, uint8_t, void*))
+                      void        (*callback_af)(rdsparser_t*, uint32_t, void*))
 {
     rds->callback_af = callback_af;
 }

@@ -16,11 +16,11 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "af.h"
+#include <librdsparser_private.h>
 
 bool
-rdsparser_af_add(rdsparser_af_t buffer,
-                 uint8_t        new_af)
+rdsparser_af_add(rdsparser_af_t *af,
+                 uint8_t         new_af)
 {
     if (new_af == 0 ||
         new_af > 204)
@@ -31,10 +31,10 @@ rdsparser_af_add(rdsparser_af_t buffer,
     const uint8_t pos = new_af / 8;
     const uint8_t bitPos = new_af % 8;
 
-    const bool exists = buffer[pos] & (0x80 >> bitPos);
+    const bool exists = af->buffer[pos] & (0x80 >> bitPos);
     if (!exists)
     {
-        buffer[pos] |= (0x80 >> bitPos);
+        af->buffer[pos] |= (0x80 >> bitPos);
         return true;
     }
 
@@ -42,11 +42,11 @@ rdsparser_af_add(rdsparser_af_t buffer,
 }
 
 void
-rdsparser_af_clear(rdsparser_af_t buffer)
+rdsparser_af_clear(rdsparser_af_t *af)
 {
     for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
     {
-        buffer[i] = 0;
+        af->buffer[i] = 0;
     }
 }
 

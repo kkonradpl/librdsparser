@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.6)
 project(librdsparser)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused -pedantic")
 
 option(RDSPARSER_DISABLE_HEAP "Disable heap allocator (rdsparser_new/free)" OFF)
 option(RDSPARSER_DISABLE_UNICODE "Disable unicode support" OFF)

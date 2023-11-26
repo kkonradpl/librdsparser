@@ -15,35 +15,42 @@
  */
 
 #include <stdint.h>
-#include "rdsparser_private.h"
+#include <librdsparser_private.h>
+#include "rdsparser.h"
 #include "group.h"
 
-uint16_t
+
+static inline uint16_t
 rdsparser_group_get_pi(const rdsparser_data_t data)
 {
     return data[RDSPARSER_BLOCK_A];
 }
 
-uint8_t
-rdsparser_group_get_group(const rdsparser_data_t data)
-{
-    return (data[RDSPARSER_BLOCK_B] & 0xF000) >> 12;
-}
-
-rdsparser_group_flag_t
-rdsparser_group_get_flag(const rdsparser_data_t data)
-{
-    return (data[RDSPARSER_BLOCK_B] & 0x0800) >> 11;
-}
-
-uint8_t
+static inline uint8_t
 rdsparser_group_get_pty(const rdsparser_data_t data)
 {
     return (data[RDSPARSER_BLOCK_B] & 0x03E0) >> 5;
 }
 
-uint8_t
+static inline uint8_t
 rdsparser_group_get_tp(const rdsparser_data_t data)
 {
     return (data[RDSPARSER_BLOCK_B] & 0x400) >> 10;
+}
+
+void
+rdsparser_group_parse(rdsparser_t             *rds,
+                      const rdsparser_data_t   data,
+                      const rdsparser_error_t  errors)
+{
+    if (errors[RDSPARSER_BLOCK_A] == 0)
+    {
+        rdsparser_set_pi(rds, rdsparser_group_get_pi(data));
+    }
+
+    if (errors[RDSPARSER_BLOCK_B] == 0)
+    {
+        rdsparser_set_pty(rds, rdsparser_group_get_pty(data));
+        rdsparser_set_tp(rds, rdsparser_group_get_tp(data));
+    }
 }

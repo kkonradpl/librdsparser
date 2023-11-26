@@ -16,7 +16,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "rdsparser_private.h"
+#include <librdsparser_private.h>
 #include "string.h"
 
 void

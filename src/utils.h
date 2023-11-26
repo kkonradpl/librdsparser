@@ -16,7 +16,7 @@
 
 #ifndef RDSPARSER_UTILS_H
 #define RDSPARSER_UTILS_H
-#include "rdsparser_private.h"
+#include <librdsparser_private.h>
 
 bool rdsparser_utils_convert(const char *input, rdsparser_data_t data_out, rdsparser_error_t errors_out);
 

@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include "rdsparser.h"
+#include <librdsparser.h>
 #include "parser.h"
 #include "asserts.h"
 
@@ -34,8 +34,8 @@ typedef struct {
     rdsparser_ta_t ta;
     rdsparser_ms_t ms;
     rdsparser_ecc_t ecc;
-    uint8_t af;
-    uint8_t af2;
+    uint32_t af1;
+    uint32_t af2;
     wchar_t ps[9];
     wchar_t rt[2][65];
 } test_context_t;
@@ -129,12 +129,12 @@ callback_ecc(rdsparser_t *rds,
 
 static void
 callback_af(rdsparser_t *rds,
-            uint8_t      new_af,
+            uint32_t     new_af,
             void        *user_data)
 {
     test_context_t *ctx = (test_context_t*)user_data;
-    assert_int_equal(new_af, ctx->af);
-    ctx->af = ctx->af2;
+    assert_int_equal(new_af, ctx->af1);
+    ctx->af1 = ctx->af2;
     function_called();
 }
 
@@ -382,40 +382,40 @@ verification_af(void **state)
 {
     test_context_t *ctx = *state;
     rdsparser_register_af(&ctx->rds, callback_af);
-    uint8_t af = 0x90;
+    uint8_t af1 = 0x90;
     uint8_t af2 = 0x01;
 
-    const rdsparser_af_t *af_buffer = rdsparser_get_af(&ctx->rds);
+    const rdsparser_af_t *af = rdsparser_get_af(&ctx->rds);
     for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
     {
-        assert_int_equal((*af_buffer)[i], 0);
+        assert_int_equal(af->buffer[i], 0);
     }
 
     expect_function_calls(callback_af, 2);
-    ctx->af = af;
-    ctx->af2 = af2;
+    ctx->af1 = af1 * 100 + 87500;
+    ctx->af2 = af2 * 100 + 87500;
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234007890013458"), true);
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234007890013458"), true);
 
     for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
     {
-        if (i == (af / 8) ||
+        if (i == (af1 / 8) ||
             i == (af2 / 8))
         {
             continue;
         }
 
-        assert_int_equal((*af_buffer)[i], 0);
+        assert_int_equal(af->buffer[i], 0);
     }
 
-    assert_int_equal((*af_buffer)[af / 8], 0x80 >> (af % 8));
-    assert_int_equal((*af_buffer)[af2 / 8], 0x80 >> (af2 % 8));
+    assert_int_equal(af->buffer[af1 / 8], 0x80 >> (af1 % 8));
+    assert_int_equal(af->buffer[af2 / 8], 0x80 >> (af2 % 8));
 
     rdsparser_clear(&ctx->rds);
 
     for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
     {
-        assert_int_equal((*af_buffer)[i], 0);
+        assert_int_equal(af->buffer[i], 0);
     }
 }
 
@@ -428,10 +428,10 @@ verification_af_invalid(void **state)
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "123400789001345810"), true);
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "123400789001345804"), true);
 
-    const rdsparser_af_t *af_buffer = rdsparser_get_af(&ctx->rds);
+    const rdsparser_af_t *af = rdsparser_get_af(&ctx->rds);
     for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
     {
-        assert_int_equal((*af_buffer)[i], 0);
+        assert_int_equal(af->buffer[i], 0);
     }
 }
 

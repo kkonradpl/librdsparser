@@ -123,7 +123,7 @@ enum rdsparser_ms
 typedef int16_t rdsparser_ecc_t;
 #define RDSPARSER_ECC_UNKNOWN -1
 
-typedef uint8_t rdsparser_af_t[RDSPARSER_AF_BUFFER_SIZE];
+typedef struct rdsparser_af rdsparser_af_t;
 
 #ifndef RDSPARSER_DISABLE_UNICODE
 #include <wchar.h>
@@ -137,7 +137,7 @@ typedef rdsparser_string_char_t rdsparser_string_t;
 rdsparser_t* rdsparser_new(void);
 void rdsparser_free(rdsparser_t *rds);
 #else
-#include "rdsparser_private.h"
+#include <librdsparser_private.h>
 #endif
 
 void rdsparser_init(rdsparser_t *rds);
@@ -170,7 +170,7 @@ void rdsparser_register_tp(rdsparser_t *rds, void (*callback_tp)(rdsparser_t*, v
 void rdsparser_register_ta(rdsparser_t *rds, void (*callback_ta)(rdsparser_t*, void*));
 void rdsparser_register_ms(rdsparser_t *rds, void (*callback_ms)(rdsparser_t*, void*));
 void rdsparser_register_ecc(rdsparser_t *rds, void (*callback_ecc)(rdsparser_t*, void*));
-void rdsparser_register_af(rdsparser_t *rds, void (*callback_af)(rdsparser_t*, uint8_t, void*));
+void rdsparser_register_af(rdsparser_t *rds, void (*callback_af)(rdsparser_t*, uint32_t, void*));
 void rdsparser_register_ps(rdsparser_t *rds, void (*callback_ps)(rdsparser_t*, void*));
 void rdsparser_register_rt(rdsparser_t *rds, void (*callback_rt)(rdsparser_t*, rdsparser_rt_flag_t, void*));
 

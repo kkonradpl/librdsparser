@@ -17,9 +17,9 @@
 #ifndef RDSPARSER_AF_H
 #define RDSPARSER_AF_H
 #include <stdint.h>
-#include "rdsparser.h"
+#include <librdsparser.h>
 
-bool rdsparser_af_add(rdsparser_af_t buffer, uint8_t af);
-void rdsparser_af_clear(rdsparser_af_t buffer);
+bool rdsparser_af_add(rdsparser_af_t *af, uint8_t new_af);
+void rdsparser_af_clear(rdsparser_af_t *af);
 
 #endif

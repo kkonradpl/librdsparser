@@ -66,7 +66,7 @@ group0_test_get_af1(void **state)
     data[1] = 0x0547;
     data[2] = 0xE4A4;
 
-    assert_int_equal(rdsparser_group0_get_af1(data), 0xE4);
+    assert_int_equal(rdsparser_group0a_get_af1(data), 0xE4);
 }
 
 static void
@@ -76,7 +76,7 @@ group0_test_get_af2(void **state)
     data[1] = 0x0547;
     data[2] = 0xE4A4;
 
-    assert_int_equal(rdsparser_group0_get_af2(data), 0xA4);
+    assert_int_equal(rdsparser_group0a_get_af2(data), 0xA4);
 }
 
 static void

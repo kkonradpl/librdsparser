@@ -33,42 +33,6 @@ group_test_get_pi(void **state)
 }
 
 static void
-group_test_get_group_2(void **state)
-{
-    rdsparser_data_t data;
-    data[1] = 0x2556;
-
-    assert_int_equal(rdsparser_group_get_group(data), 2);
-}
-
-static void
-group_test_get_group_15(void **state)
-{
-    rdsparser_data_t data;
-    data[1] = 0xF808;
-
-    assert_int_equal(rdsparser_group_get_group(data), 15);
-}
-
-static void
-group_test_get_flag_a(void **state)
-{
-    rdsparser_data_t data;
-    data[1] = 0xE00E;
-
-    assert_int_equal(rdsparser_group_get_flag(data), RDSPARSER_GROUP_FLAG_A);
-}
-
-static void
-group_test_get_flag_b(void **state)
-{
-    rdsparser_data_t data;
-    data[1] = 0xE800;
-
-    assert_int_equal(rdsparser_group_get_flag(data), RDSPARSER_GROUP_FLAG_B);
-}
-
-static void
 group_test_get_pty_0(void **state)
 {
     rdsparser_data_t data;
@@ -107,10 +71,6 @@ group_test_get_tp_false(void **state)
 const struct CMUnitTest tests[] =
 {
     cmocka_unit_test_setup_teardown(group_test_get_pi, NULL, NULL),
-    cmocka_unit_test_setup_teardown(group_test_get_group_2, NULL, NULL),
-    cmocka_unit_test_setup_teardown(group_test_get_group_15, NULL, NULL),
-    cmocka_unit_test_setup_teardown(group_test_get_flag_a, NULL, NULL),
-    cmocka_unit_test_setup_teardown(group_test_get_flag_b, NULL, NULL),
     cmocka_unit_test_setup_teardown(group_test_get_pty_0, NULL, NULL),
     cmocka_unit_test_setup_teardown(group_test_get_pty_10, NULL, NULL),
     cmocka_unit_test_setup_teardown(group_test_get_tp_true, NULL, NULL),

@@ -16,7 +16,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include "rdsparser_private.h"
+#include <librdsparser_private.h>
 
 bool
 rdsparser_utils_convert(const char        *input,

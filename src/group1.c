@@ -14,16 +14,44 @@
  *  Lesser General Public License for more details.
  */
 
-#include "rdsparser_private.h"
+#include <librdsparser_private.h>
+#include "rdsparser.h"
 
-uint8_t
+static inline uint8_t
 rdsparser_group1a_get_variant(const rdsparser_data_t data)
 {
     return (data[RDSPARSER_BLOCK_C] & 0x7000) >> 12;
 }
 
-uint8_t
+static inline uint8_t
 rdsparser_group1a0_get_ecc(const rdsparser_data_t data)
 {
     return (uint8_t)data[RDSPARSER_BLOCK_C];
+}
+
+static inline void
+rdsparser_group1a_parse(rdsparser_t             *rds,
+                        const rdsparser_data_t   data,
+                        const rdsparser_error_t  errors)
+{
+    if (errors[RDSPARSER_BLOCK_B] == 0 &&
+        errors[RDSPARSER_BLOCK_C] == 0)
+    {
+        if (rdsparser_group1a_get_variant(data) == 0)
+        {
+            rdsparser_set_ecc(rds, rdsparser_group1a0_get_ecc(data));
+        }
+    }
+}
+
+void
+rdsparser_group1_parse(rdsparser_t             *rds,
+                       const rdsparser_data_t   data,
+                       const rdsparser_error_t  errors,
+                       rdsparser_group_flag_t   flag)
+{
+    if (flag == RDSPARSER_GROUP_FLAG_A)
+    {
+        rdsparser_group1a_parse(rds, data, errors);
+    }
 }

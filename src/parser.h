@@ -16,8 +16,9 @@
 
 #ifndef RDSPARSER_PARSER_H
 #define RDSPARSER_PARSER_H
-#include "rdsparser_private.h"
+#include <librdsparser_private.h>
 
-void rdsparser_parser_process(rdsparser_t *context, const rdsparser_data_t data, const rdsparser_error_t errors);
+void rdsparser_parser_process(rdsparser_t *rds, const rdsparser_data_t data, const rdsparser_error_t errors);
+bool rdsparser_parser_update_string(rdsparser_t *rds, rdsparser_string_t *string, rdsparser_text_t text, rdsparser_block_t data_block, const rdsparser_data_t data, const rdsparser_error_t errors, uint8_t position);
 
 #endif
