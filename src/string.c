@@ -54,7 +54,7 @@ librds_string_get_content(const librds_string_t *string)
     return (string + 1);
 }
 
-const uint8_t*
+const librds_string_error_t*
 librds_string_get_errors(const librds_string_t *string)
 {
     const uint8_t size = librds_string_get_size(string);
@@ -65,7 +65,7 @@ bool
 librds_string_get_available(const librds_string_t *string)
 {
     const uint8_t size = librds_string_get_size(string);
-    const uint8_t *errors = librds_string_get_errors(string);
+    const librds_string_error_t *errors = librds_string_get_errors(string);
 
     for (uint8_t i = 0; i < size; i++)
     {
@@ -93,10 +93,10 @@ librds_string_clear(librds_string_t *string)
 }
 
 static librds_string_error_t
-librds_string_calculate_error(librds_block_error_t pos_error,
+librds_string_calculate_error(librds_block_error_t info_error,
                               librds_block_error_t data_error)
 {
-    const uint8_t value = 2 * pos_error + 3 * data_error;
+    const uint8_t value = 2 * info_error + 3 * data_error;
     return (librds_string_error_t)(value ? value - 1 : 0);
 }
 
@@ -153,7 +153,7 @@ librds_string_convert(uint8_t input)
 static bool
 librds_string_update_single(librds_string_t       *string,
                             uint8_t                input,
-                            librds_block_error_t   pos_error,
+                            librds_block_error_t   info_error,
                             librds_block_error_t   data_error,
                             uint8_t                position,
                             bool                   progressive,
@@ -161,7 +161,7 @@ librds_string_update_single(librds_string_t       *string,
 {
     librds_string_char_t *output = (librds_string_char_t*)librds_string_get_content(string);
     librds_string_error_t *output_errors = (librds_string_error_t*)librds_string_get_errors(string);
-    librds_string_error_t error = librds_string_calculate_error(pos_error, data_error);
+    librds_string_error_t error = librds_string_calculate_error(info_error, data_error);
 
     if (progressive &&
         output_errors[position] < error)
@@ -173,7 +173,7 @@ librds_string_update_single(librds_string_t       *string,
     if (input == '\r')
     {
         if (!allow_eol ||
-            pos_error != LIBRDS_BLOCK_ERROR_NONE ||
+            info_error != LIBRDS_BLOCK_ERROR_NONE ||
             data_error != LIBRDS_BLOCK_ERROR_NONE)
         {
             /* Only error-free line endings */
@@ -215,7 +215,7 @@ librds_string_update_single(librds_string_t       *string,
 bool
 librds_string_update(librds_string_t       *string,
                      const char             input[2],
-                     librds_block_error_t   pos_error,
+                     librds_block_error_t   info_error,
                      librds_block_error_t   data_error,
                      uint8_t                position,
                      bool                   progressive,
@@ -228,7 +228,7 @@ librds_string_update(librds_string_t       *string,
     {
         changed |= librds_string_update_single(string,
                                                input[i],
-                                               pos_error,
+                                               info_error,
                                                data_error,
                                                position + i,
                                                progressive,

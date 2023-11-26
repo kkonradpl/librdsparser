@@ -32,12 +32,12 @@ typedef enum librds_group_flag
 struct librds
 {
     /* Data buffers */
-    int32_t pi;
-    int8_t tp;
-    int8_t ta;
-    int8_t ms;
-    int8_t pty;
-    int16_t ecc;
+    librds_pi_t pi;
+    librds_pty_t pty;
+    librds_tp_t tp;
+    librds_ta_t ta;
+    librds_ms_t ms;
+    librds_ecc_t ecc;
     librds_af_t af;
     librds_string_t ps[LIBRDS_STRING_SIZE(LIBRDS_PS_LENGTH)];
     librds_string_t rt[LIBRDS_RT_FLAG_COUNT][LIBRDS_STRING_SIZE(LIBRDS_RT_LENGTH)];
@@ -48,15 +48,15 @@ struct librds
 
     /* Callbacks */
     void *user_data;
-    void (*callback_pi)(uint16_t, void*);
-    void (*callback_pty)(uint8_t, void*);
-    void (*callback_tp)(bool, void*);
-    void (*callback_ta)(bool, void*);
-    void (*callback_ms)(bool, void*);
-    void (*callback_ecc)(uint8_t, void*);
-    void (*callback_af)(uint8_t, void*);
-    void (*callback_ps)(const librds_string_t*, void*);
-    void (*callback_rt)(const librds_string_t*, librds_rt_flag_t, void*);
+    void (*callback_pi)(librds_t*, void*);
+    void (*callback_pty)(librds_t*, void*);
+    void (*callback_tp)(librds_t*, void*);
+    void (*callback_ta)(librds_t*, void*);
+    void (*callback_ms)(librds_t*, void*);
+    void (*callback_ecc)(librds_t*, void*);
+    void (*callback_af)(librds_t*, uint8_t, void*);
+    void (*callback_ps)(librds_t*, void*);
+    void (*callback_rt)(librds_t*, librds_rt_flag_t, void*);
 
     /* Other data */
     int8_t last_rt_flag;

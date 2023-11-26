@@ -28,14 +28,14 @@
 
 typedef struct {
     librds_t rds;
-    uint16_t pi;
-    uint8_t pty;
-    bool tp;
-    bool ta;
-    bool ms;
+    librds_pi_t pi;
+    librds_pty_t pty;
+    librds_tp_t tp;
+    librds_ta_t ta;
+    librds_ms_t ms;
+    librds_ecc_t ecc;
     uint8_t af;
     uint8_t af2;
-    uint8_t ecc;
     wchar_t ps[9];
     wchar_t rt[2][65];
 } test_context_t;
@@ -74,85 +74,88 @@ test_teardown(void **state)
 }
 
 static void
-callback_pi(uint16_t  pi,
+callback_pi(librds_t *rds,
             void     *user_data)
 {
     test_context_t *ctx = (test_context_t*)user_data;
-    assert_int_equal(pi, ctx->pi);
+    assert_int_equal(librds_get_pi(rds), ctx->pi);
     function_called();
 }
 
 static void
-callback_pty(uint8_t  pty,
-             void    *user_data)
+callback_pty(librds_t *rds,
+             void     *user_data)
 {
     test_context_t *ctx = (test_context_t*)user_data;
-    assert_int_equal(pty, ctx->pty);
+    assert_int_equal(librds_get_pty(rds), ctx->pty);
     function_called();
 }
 
 static void
-callback_tp(bool  tp,
-            void *user_data)
+callback_tp(librds_t *rds,
+            void     *user_data)
 {
     test_context_t *ctx = (test_context_t*)user_data;
-    assert_int_equal(tp, ctx->tp);
+    assert_int_equal(librds_get_tp(rds), ctx->tp);
     function_called();
 }
 
 static void
-callback_ta(bool  ta,
-            void *user_data)
+callback_ta(librds_t *rds,
+            void     *user_data)
 {
     test_context_t *ctx = (test_context_t*)user_data;
-    assert_int_equal(ta, ctx->ta);
+    assert_int_equal(librds_get_ta(rds), ctx->ta);
     function_called();
 }
 
 static void
-callback_ms(bool  ms,
-            void *user_data)
+callback_ms(librds_t *rds,
+            void     *user_data)
 {
     test_context_t *ctx = (test_context_t*)user_data;
-    assert_int_equal(ms, ctx->ms);
+    assert_int_equal(librds_get_ms(rds), ctx->ms);
     function_called();
 }
 
 static void
-callback_af(uint8_t  af,
-            void    *user_data)
+callback_ecc(librds_t *rds,
+             void     *user_data)
 {
     test_context_t *ctx = (test_context_t*)user_data;
-    assert_int_equal(af, ctx->af);
+    assert_int_equal(librds_get_ecc(rds), ctx->ecc);
+    function_called();
+}
+
+static void
+callback_af(librds_t *rds,
+            uint8_t   new_af,
+            void     *user_data)
+{
+    test_context_t *ctx = (test_context_t*)user_data;
+    assert_int_equal(new_af, ctx->af);
     ctx->af = ctx->af2;
     function_called();
 }
 
 static void
-callback_ecc(uint8_t  ecc,
-             void    *user_data)
+callback_ps(librds_t *rds,
+            void     *user_data)
 {
     test_context_t *ctx = (test_context_t*)user_data;
-    assert_int_equal(ecc, ctx->ecc);
-    function_called();
-}
-
-static void
-callback_ps(const librds_string_t *string,
-            void                  *user_data)
-{
-    test_context_t *ctx = (test_context_t*)user_data;
+    const librds_string_t *string = librds_get_ps(rds);
     const librds_string_char_t *content = librds_string_get_content(string);
     assert_rds_string_equal(content, ctx->ps);
     function_called();
 }
 
 static void
-callback_rt(const librds_string_t *string,
-            librds_rt_flag_t       flag,
-            void                  *user_data)
+callback_rt(librds_t         *rds,
+            librds_rt_flag_t  flag,
+            void             *user_data)
 {
     test_context_t *ctx = (test_context_t*)user_data;
+    const librds_string_t *string = librds_get_rt(rds, flag);
     const librds_string_char_t *content = librds_string_get_content(string);
     assert_rds_string_equal(content, ctx->rt[flag]);
     function_called();
@@ -170,7 +173,6 @@ verification_pi(void **state)
     expect_function_call(callback_pi);
     ctx->pi = 0x1234;
     assert_int_equal(librds_parse_string(&ctx->rds, "1234567890123458"), true);
-    assert_int_equal(librds_get_pi(&ctx->rds), ctx->pi);
     /* Same value, no callback */
     assert_int_equal(librds_parse_string(&ctx->rds, "1234567890123458"), true);
 
@@ -189,6 +191,33 @@ verification_pi_invalid(void **state)
 }
 
 static void
+verification_pty(void **state)
+{
+    test_context_t *ctx = *state;
+    librds_register_pty(&ctx->rds, callback_pty);
+    assert_int_equal(librds_get_pty(&ctx->rds), -1);
+
+    expect_function_call(callback_pty);
+    ctx->pty = 19;
+    assert_int_equal(librds_parse_string(&ctx->rds, "1234567890123458"), true);
+    /* Same value, no callback */
+    assert_int_equal(librds_parse_string(&ctx->rds, "1234567890123458"), true);
+
+    librds_clear(&ctx->rds);
+    assert_int_equal(librds_get_pty(&ctx->rds), -1);
+}
+
+static void
+verification_pty_invalid(void **state)
+{
+    test_context_t *ctx = *state;
+    librds_register_pty(&ctx->rds, callback_pty);
+
+    assert_int_equal(librds_parse_string(&ctx->rds, "123400000000000010"), true);
+    assert_int_equal(librds_get_pty(&ctx->rds), -1);
+}
+
+static void
 verification_tp_true(void **state)
 {
     test_context_t *ctx = *state;
@@ -198,8 +227,6 @@ verification_tp_true(void **state)
     expect_function_call(callback_tp);
     ctx->tp = 1;
     assert_int_equal(librds_parse_string(&ctx->rds, "1234567890123458"), true);
-    assert_int_equal(librds_get_tp(&ctx->rds), ctx->tp);
-
     /* Same value, no callback */
     assert_int_equal(librds_parse_string(&ctx->rds, "1234567890123458"), true);
 
@@ -217,8 +244,6 @@ verification_tp_false(void **state)
     expect_function_call(callback_tp);
     ctx->tp = 0;
     assert_int_equal(librds_parse_string(&ctx->rds, "1234000000000000"), true);
-    assert_int_equal(librds_get_tp(&ctx->rds), ctx->tp);
-
     /* Same value, no callback */
     assert_int_equal(librds_parse_string(&ctx->rds, "1234000000000000"), true);
 
@@ -246,8 +271,6 @@ verification_ta_true(void **state)
     expect_function_call(callback_ta);
     ctx->ta = 1;
     assert_int_equal(librds_parse_string(&ctx->rds, "12340FFFFFFFFFFF"), true);
-    assert_int_equal(librds_get_ta(&ctx->rds), ctx->ta);
-
     /* Same value, no callback */
     assert_int_equal(librds_parse_string(&ctx->rds, "12340FFFFFFFFFFF"), true);
 
@@ -265,8 +288,6 @@ verification_ta_false(void **state)
     expect_function_call(callback_ta);
     ctx->ta = 0;
     assert_int_equal(librds_parse_string(&ctx->rds, "1234000090123458"), true);
-    assert_int_equal(librds_get_ta(&ctx->rds), ctx->ta);
-
     /* Same value, no callback */
     assert_int_equal(librds_parse_string(&ctx->rds, "1234000090123458"), true);
 
@@ -288,14 +309,12 @@ static void
 verification_ms_true(void **state)
 {
     test_context_t *ctx = *state;
-    librds_register_ta(&ctx->rds, callback_ms);
+    librds_register_ms(&ctx->rds, callback_ms);
     assert_int_equal(librds_get_ms(&ctx->rds), -1);
 
     expect_function_call(callback_ms);
     ctx->ms = 1;
     assert_int_equal(librds_parse_string(&ctx->rds, "12340FFFFFFFFFFF"), true);
-    assert_int_equal(librds_get_ms(&ctx->rds), ctx->ms);
-
     /* Same value, no callback */
     assert_int_equal(librds_parse_string(&ctx->rds, "12340FFFFFFFFFFF"), true);
 
@@ -307,14 +326,12 @@ static void
 verification_ms_false(void **state)
 {
     test_context_t *ctx = *state;
-    librds_register_ta(&ctx->rds, callback_ms);
+    librds_register_ms(&ctx->rds, callback_ms);
     assert_int_equal(librds_get_ms(&ctx->rds), -1);
 
     expect_function_call(callback_ms);
     ctx->ms = 0;
     assert_int_equal(librds_parse_string(&ctx->rds, "1234000001230458"), true);
-    assert_int_equal(librds_get_ms(&ctx->rds), ctx->ms);
-
     /* Same value, no callback */
     assert_int_equal(librds_parse_string(&ctx->rds, "1234000001230458"), true);
 
@@ -333,32 +350,31 @@ verification_ms_invalid(void **state)
 }
 
 static void
-verification_pty(void **state)
+verification_ecc(void **state)
 {
     test_context_t *ctx = *state;
-    librds_register_pty(&ctx->rds, callback_pty);
-    assert_int_equal(librds_get_pty(&ctx->rds), -1);
+    librds_register_ecc(&ctx->rds, callback_ecc);
+    assert_int_equal(librds_get_ecc(&ctx->rds), -1);
 
-    expect_function_call(callback_pty);
-    ctx->pty = 19;
-    assert_int_equal(librds_parse_string(&ctx->rds, "1234567890123458"), true);
-    assert_int_equal(librds_get_pty(&ctx->rds), ctx->pty);
-
+    expect_function_call(callback_ecc);
+    ctx->ecc = 0xE2;
+    assert_int_equal(librds_parse_string(&ctx->rds, "3566100000E20000"), true);
     /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "1234567890123458"), true);
+    assert_int_equal(librds_parse_string(&ctx->rds, "3566100000E20000"), true);
 
     librds_clear(&ctx->rds);
-    assert_int_equal(librds_get_pty(&ctx->rds), -1);
+    assert_int_equal(librds_get_ecc(&ctx->rds), -1);
 }
 
 static void
-verification_pty_invalid(void **state)
+verification_ecc_invalid(void **state)
 {
     test_context_t *ctx = *state;
-    librds_register_pty(&ctx->rds, callback_pty);
+    librds_register_ecc(&ctx->rds, callback_ecc);
 
-    assert_int_equal(librds_parse_string(&ctx->rds, "123400000000000010"), true);
-    assert_int_equal(librds_get_pty(&ctx->rds), -1);
+    assert_int_equal(librds_parse_string(&ctx->rds, "3566100000E2000010"), true);
+    assert_int_equal(librds_parse_string(&ctx->rds, "3566100000E2000004"), true);
+    assert_int_equal(librds_get_ecc(&ctx->rds), -1);
 }
 
 static void
@@ -420,36 +436,6 @@ verification_af_invalid(void **state)
 }
 
 static void
-verification_ecc(void **state)
-{
-    test_context_t *ctx = *state;
-    librds_register_ecc(&ctx->rds, callback_ecc);
-    assert_int_equal(librds_get_ecc(&ctx->rds), -1);
-
-    expect_function_call(callback_ecc);
-    ctx->ecc = 0xE2;
-    assert_int_equal(librds_parse_string(&ctx->rds, "3566100000E20000"), true);
-    assert_int_equal(librds_get_ecc(&ctx->rds), ctx->ecc);
-
-    /* Same value, no callback */
-    assert_int_equal(librds_parse_string(&ctx->rds, "3566100000E20000"), true);
-
-    librds_clear(&ctx->rds);
-    assert_int_equal(librds_get_ecc(&ctx->rds), -1);
-}
-
-static void
-verification_ecc_invalid(void **state)
-{
-    test_context_t *ctx = *state;
-    librds_register_ecc(&ctx->rds, callback_ecc);
-
-    assert_int_equal(librds_parse_string(&ctx->rds, "3566100000E2000010"), true);
-    assert_int_equal(librds_parse_string(&ctx->rds, "3566100000E2000004"), true);
-    assert_int_equal(librds_get_ecc(&ctx->rds), -1);
-}
-
-static void
 check_ps(test_context_t *ctx,
          const char     *rds_input,
          const wchar_t  *expected)
@@ -457,8 +443,6 @@ check_ps(test_context_t *ctx,
     expect_function_call(callback_ps);
     swprintf(ctx->ps, sizeof(ctx->ps), expected);
     assert_int_equal(librds_parse_string(&ctx->rds, rds_input), true);
-    assert_rds_string_equal(librds_string_get_content(librds_get_ps(&ctx->rds)), ctx->ps);
-
     /* Same value, no callback */
     assert_int_equal(librds_parse_string(&ctx->rds, rds_input), true);
 
@@ -616,8 +600,6 @@ check_rt(test_context_t   *ctx,
     expect_function_call(callback_rt);
     swprintf(ctx->rt[flag], sizeof(ctx->rt[flag]), expected);
     assert_int_equal(librds_parse_string(&ctx->rds, rds_input), true);
-    assert_rds_string_equal(librds_string_get_content(librds_get_rt(&ctx->rds, flag)), ctx->rt[flag]);
-
     /* Same value, no callback */
     assert_int_equal(librds_parse_string(&ctx->rds, rds_input), true);
 
@@ -810,6 +792,8 @@ const struct CMUnitTest tests[] =
 {
     cmocka_unit_test_setup_teardown(verification_pi, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_pi_invalid, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(verification_pty, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(verification_pty_invalid, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_tp_true, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_tp_false, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_tp_invalid, test_setup, test_teardown),
@@ -819,12 +803,10 @@ const struct CMUnitTest tests[] =
     cmocka_unit_test_setup_teardown(verification_ms_true, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ms_false, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ms_invalid, test_setup, test_teardown),
-    cmocka_unit_test_setup_teardown(verification_pty, test_setup, test_teardown),
-    cmocka_unit_test_setup_teardown(verification_pty_invalid, test_setup, test_teardown),
-    cmocka_unit_test_setup_teardown(verification_af, test_setup, test_teardown),
-    cmocka_unit_test_setup_teardown(verification_af_invalid, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ecc, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ecc_invalid, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(verification_af, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(verification_af_invalid, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ps, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ps_invalid, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ps_invalid_pos, test_setup, test_teardown),

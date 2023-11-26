@@ -64,7 +64,7 @@ librds_parse_group(librds_t             *context,
             context->pi = pi;
             if (context->callback_pi)
             {
-                context->callback_pi(pi, context->user_data);
+                context->callback_pi(context, context->user_data);
             }
         }
     }
@@ -77,7 +77,7 @@ librds_parse_group(librds_t             *context,
             context->pty = pty;
             if (context->callback_pty)
             {
-                context->callback_pty(pty, context->user_data);
+                context->callback_pty(context, context->user_data);
             }
         }
 
@@ -87,7 +87,7 @@ librds_parse_group(librds_t             *context,
             context->tp = tp;
             if (context->callback_tp)
             {
-                context->callback_tp(tp, context->user_data);
+                context->callback_tp(context, context->user_data);
             }
         }
     }
@@ -106,7 +106,7 @@ librds_parse_group0(librds_t             *context,
             context->ta = ta;
             if (context->callback_ta)
             {
-                context->callback_ta(ta, context->user_data);
+                context->callback_ta(context, context->user_data);
             }
         }
 
@@ -116,7 +116,7 @@ librds_parse_group0(librds_t             *context,
             context->ms = ms;
             if (context->callback_ms)
             {
-                context->callback_ms(ms, context->user_data);
+                context->callback_ms(context, context->user_data);
             }
         }
     }
@@ -129,7 +129,7 @@ librds_parse_group0(librds_t             *context,
         {
             if (context->callback_af)
             {
-                context->callback_af(af1, context->user_data);
+                context->callback_af(context, af1, context->user_data);
             }
         }
 
@@ -138,7 +138,7 @@ librds_parse_group0(librds_t             *context,
         {
             if (context->callback_af)
             {
-                context->callback_af(af2, context->user_data);
+                context->callback_af(context, af2, context->user_data);
             }
         }
     }
@@ -157,7 +157,7 @@ librds_parse_group0(librds_t             *context,
     if (changed &&
         context->callback_ps)
     {
-        context->callback_ps(context->ps,
+        context->callback_ps(context,
                              context->user_data);
     }
 }
@@ -178,7 +178,7 @@ librds_parse_group1a(librds_t             *context,
                 context->ecc = ecc;
                 if (context->callback_ecc)
                 {
-                    context->callback_ecc(ecc, context->user_data);
+                    context->callback_ecc(context, context->user_data);
                 }
             }
         }
@@ -250,7 +250,7 @@ librds_parse_group2(librds_t             *context,
     if (changed &&
         context->callback_rt)
     {
-        context->callback_rt(context->rt[rt_flag],
+        context->callback_rt(context,
                              rt_flag,
                              context->user_data);
     }

@@ -19,6 +19,6 @@
 
 void librds_string_init(librds_string_t *string, uint8_t size);
 void librds_string_clear(librds_string_t *string);
-bool librds_string_update(librds_string_t *string, const char input[2], librds_block_error_t pos_error, librds_block_error_t data_error, uint8_t position, bool progressive, bool allow_eol);
+bool librds_string_update(librds_string_t *string, const char input[2], librds_block_error_t info_error, librds_block_error_t data_error, uint8_t position, bool progressive, bool allow_eol);
 
 #endif

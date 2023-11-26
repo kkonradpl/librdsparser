@@ -62,7 +62,7 @@ test_teardown(void **state)
 }
 
 static void
-callback_pi(uint16_t  pi,
+callback_pi(librds_t *rds,
             void     *user_data)
 {
     (void)user_data;
@@ -70,65 +70,66 @@ callback_pi(uint16_t  pi,
 }
 
 static void
-callback_pty(uint8_t  pty,
-             void    *user_data)
+callback_pty(librds_t *rds,
+             void     *user_data)
 {
     (void)user_data;
     function_called();
 }
 
 static void
-callback_tp(bool  tp,
-            void *user_data)
+callback_tp(librds_t *rds,
+            void     *user_data)
 {
     (void)user_data;
     function_called();
 }
 
 static void
-callback_ta(bool  ta,
-            void *user_data)
+callback_ta(librds_t *rds,
+            void     *user_data)
 {
     (void)user_data;
     function_called();
 }
 
 static void
-callback_ms(bool  ms,
-            void *user_data)
+callback_ms(librds_t *rds,
+            void     *user_data)
 {
     (void)user_data;
     function_called();
 }
 
 static void
-callback_ecc(uint8_t  ecc,
-             void    *user_data)
+callback_ecc(librds_t *rds,
+             void     *user_data)
 {
     (void)user_data;
     function_called();
 }
 
 static void
-callback_af(uint8_t  af,
-            void    *user_data)
+callback_af(librds_t *rds,
+            uint8_t   new_af,
+            void     *user_data)
 {
     (void)user_data;
     function_called();
 }
 
 static void
-callback_ps(const librds_string_t *ps,
-            void                  *user_data)
+callback_ps(librds_t *rds,
+            void     *user_data)
 {
     (void)user_data;
     function_called();
 }
 
 static void
-callback_rt(const librds_string_t *rt,
-            librds_rt_flag_t       flag,
-            void                  *user_data)
+callback_rt(librds_t         *rds,
+            librds_rt_flag_t  flag,
+            void             *user_data)
 {
     (void)user_data;
     function_called();
@@ -141,12 +142,12 @@ librds_test_reset(void **state)
 {
     test_context_t *ctx = *state;
 
-    assert_int_equal(librds_get_pi(&ctx->rds), -1);
-    assert_int_equal(librds_get_tp(&ctx->rds), -1);
-    assert_int_equal(librds_get_ta(&ctx->rds), -1);
-    assert_int_equal(librds_get_ms(&ctx->rds), -1);
-    assert_int_equal(librds_get_pty(&ctx->rds), -1);
-    assert_int_equal(librds_get_ecc(&ctx->rds), -1);
+    assert_int_equal(librds_get_pi(&ctx->rds), LIBRDS_PI_UNKNOWN);
+    assert_int_equal(librds_get_pty(&ctx->rds), LIBRDS_PTY_UNKNOWN);
+    assert_int_equal(librds_get_tp(&ctx->rds), LIBRDS_TP_UNKNOWN);
+    assert_int_equal(librds_get_ta(&ctx->rds), LIBRDS_TA_UNKNOWN);
+    assert_int_equal(librds_get_ms(&ctx->rds), LIBRDS_MS_UNKNOWN);
+    assert_int_equal(librds_get_ecc(&ctx->rds), LIBRDS_ECC_UNKNOWN);
 
     const librds_af_t *af = librds_get_af(&ctx->rds);
     for (uint8_t i = 0; i < LIBRDS_AF_BUFFER_SIZE; i++)
@@ -164,7 +165,6 @@ librds_test_reset(void **state)
     for (uint8_t i = 0; i < LIBRDS_PS_LENGTH; i++)
     {
         assert_int_equal(content[i], ' ');
-        printf("%d \n", errors[i]);
         assert_int_equal(errors[i], LIBRDS_STRING_ERROR_UNCORRECTABLE);
     }
 

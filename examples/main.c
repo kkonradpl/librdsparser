@@ -115,58 +115,60 @@ static const char *rds_data[] =
 };
 
 static void
-callback_pi(uint16_t  pi,
+callback_pi(librds_t *rds,
             void     *user_data)
 {
-    printf("PI: %04X\n", pi);
+    printf("PI: %04X\n", librds_get_pi(rds));
 }
 
 static void
-callback_pty(uint8_t  pty,
-             void    *user_data)
+callback_pty(librds_t *rds,
+             void     *user_data)
 {
-    printf("PTY: %d\n", pty);
+    printf("PTY: %d\n", librds_get_pty(rds));
 }
 
 static void
-callback_tp(bool  tp,
-            void *user_data)
+callback_tp(librds_t *rds,
+            void     *user_data)
 {
-    printf("TP: %d\n", tp);
+    printf("TP: %d\n", librds_get_tp(rds));
 }
 
 static void
-callback_ta(bool  tp,
-            void *user_data)
+callback_ta(librds_t *rds,
+            void     *user_data)
 {
-    printf("TA: %d\n", tp);
+    printf("TA: %d\n", librds_get_ta(rds));
 }
 
 static void
-callback_ms(bool  tp,
-            void *user_data)
+callback_ms(librds_t *rds,
+            void     *user_data)
 {
-    printf("MS: %d\n", tp);
+    printf("MS: %d\n", librds_get_ms(rds));
 }
 
 static void
-callback_ecc(uint8_t  ecc,
-             void    *user_data)
+callback_ecc(librds_t *rds,
+             void     *user_data)
 {
-    printf("ECC: %d\n", ecc);
+    printf("ECC: %d\n", librds_get_ecc(rds));
 }
 
 static void
-callback_af(uint8_t  af,
-            void    *user_data)
+callback_af(librds_t *rds,
+            uint8_t   new_af,
+            void     *user_data)
 {
-    printf("AF: %d\n", af*100 + 87500);
+    printf("AF: %d\n", new_af*100 + 87500);
 }
 
 static void
-callback_ps(const librds_string_t *ps,
-            void                  *user_data)
+callback_ps(librds_t *rds,
+            void     *user_data)
 {
+    const librds_string_t *ps = librds_get_ps(rds);
     const librds_string_char_t *ps_content = librds_string_get_content(ps);
 #ifdef LIBRDS_DISABLE_UNICODE
     printf("PS: %s\n", ps_content);
@@ -176,10 +178,11 @@ callback_ps(const librds_string_t *ps,
 }
 
 static void
-callback_rt(const librds_string_t *rt,
-            librds_rt_flag_t       flag,
-            void                  *user_data)
+callback_rt(librds_t         *rds,
+            librds_rt_flag_t  flag,
+            void             *user_data)
 {
+    const librds_string_t *rt = librds_get_rt(rds, flag);
     const librds_string_char_t *rt_content = librds_string_get_content(rt);
 #ifdef LIBRDS_DISABLE_UNICODE
     printf("RT%d: %s\n", flag, rt_content);

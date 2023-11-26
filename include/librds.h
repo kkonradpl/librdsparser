@@ -89,7 +89,42 @@ enum librds_rt_flag
 typedef struct librds librds_t;
 typedef uint16_t librds_data_t[LIBRDS_BLOCK_COUNT];
 typedef uint8_t librds_error_t[LIBRDS_BLOCK_COUNT];
+
+typedef int32_t librds_pi_t;
+#define LIBRDS_PI_UNKNOWN -1
+
+typedef int8_t librds_pty_t;
+#define LIBRDS_PTY_UNKNOWN -1
+
+typedef int8_t librds_tp_t;
+enum librds_tp
+{
+    LIBRDS_TP_UNKNOWN = -1,
+    LIBRDS_TP_OFF = 0,
+    LIBRDS_TP_ON = 1
+};
+
+typedef int8_t librds_ta_t;
+enum librds_ta
+{
+    LIBRDS_TA_UNKNOWN = -1,
+    LIBRDS_TA_OFF = 0,
+    LIBRDS_TA_ON = 1
+};
+
+typedef int8_t librds_ms_t;
+enum librds_ms
+{
+    LIBRDS_MS_UNKNOWN = -1,
+    LIBRDS_MS_MUSIC = 0,
+    LIBRDS_MS_SPEECH = 1
+};
+
+typedef int16_t librds_ecc_t;
+#define LIBRDS_ECC_UNKNOWN -1
+
 typedef uint8_t librds_af_t[LIBRDS_AF_BUFFER_SIZE];
+
 #ifndef LIBRDS_DISABLE_UNICODE
 #include <wchar.h>
 typedef wchar_t librds_string_char_t;
@@ -100,44 +135,44 @@ typedef librds_string_char_t librds_string_t;
 
 #ifndef LIBRDS_DISABLE_HEAP
 librds_t* librds_new(void);
-void librds_free(librds_t *context);
+void librds_free(librds_t *rds);
 #else
 #include "librds_private.h"
 #endif
 
-void librds_init(librds_t *context);
-void librds_clear(librds_t *context);
+void librds_init(librds_t *rds);
+void librds_clear(librds_t *rds);
 
-void librds_parse(librds_t *context, librds_data_t data, librds_error_t errors);
-bool librds_parse_string(librds_t *context, const char *input);
+void librds_parse(librds_t *rds, librds_data_t data, librds_error_t errors);
+bool librds_parse_string(librds_t *rds, const char *input);
 
-void librds_set_text_correction(librds_t *context, librds_text_t text, librds_block_type_t type, librds_block_error_t error);
-librds_block_error_t librds_get_text_correction(const librds_t *context, librds_text_t text, librds_block_type_t type);
+void librds_set_text_correction(librds_t *rds, librds_text_t text, librds_block_type_t type, librds_block_error_t error);
+librds_block_error_t librds_get_text_correction(const librds_t *rds, librds_text_t text, librds_block_type_t type);
 
-void librds_set_text_progressive(librds_t *context, librds_text_t string, bool state);
-bool librds_get_text_progressive(const librds_t *context, librds_text_t string);
+void librds_set_text_progressive(librds_t *rds, librds_text_t string, bool state);
+bool librds_get_text_progressive(const librds_t *rds, librds_text_t string);
 
-int32_t librds_get_pi(const librds_t *context);
-int8_t librds_get_tp(const librds_t *context);
-int8_t librds_get_ta(const librds_t *context);
-int8_t librds_get_ms(const librds_t *context);
-int8_t librds_get_pty(const librds_t *context);
-int16_t librds_get_ecc(const librds_t *context);
-const librds_af_t* librds_get_af(const librds_t *context);
-const librds_string_t* librds_get_ps(const librds_t *context);
-const librds_string_t* librds_get_rt(const librds_t *context, librds_rt_flag_t flag);
+librds_pi_t librds_get_pi(const librds_t *rds);
+librds_pty_t librds_get_pty(const librds_t *rds);
+librds_tp_t librds_get_tp(const librds_t *rds);
+librds_ta_t librds_get_ta(const librds_t *rds);
+librds_ms_t librds_get_ms(const librds_t *rds);
+librds_ecc_t librds_get_ecc(const librds_t *rds);
+const librds_af_t* librds_get_af(const librds_t *rds);
+const librds_string_t* librds_get_ps(const librds_t *rds);
+const librds_string_t* librds_get_rt(const librds_t *rds, librds_rt_flag_t flag);
 
-void librds_set_user_data(librds_t *context, void *user_data);
+void librds_set_user_data(librds_t *rds, void *user_data);
 
-void librds_register_pi(librds_t *context, void (*callback_pi)(uint16_t, void*));
-void librds_register_pty(librds_t *context, void (*callback_pty)(uint8_t, void*));
-void librds_register_tp(librds_t *context, void (*callback_tp)(bool, void*));
-void librds_register_ta(librds_t *context, void (*callback_ta)(bool, void*));
-void librds_register_ms(librds_t *context, void (*callback_ms)(bool, void*));
-void librds_register_ecc(librds_t *context, void (*callback_ecc)(uint8_t, void*));
-void librds_register_af(librds_t *context, void (*callback_af)(uint8_t, void*));
-void librds_register_ps(librds_t *context, void (*callback_ps)(const librds_string_t*, void*));
-void librds_register_rt(librds_t *context, void (*callback_rt)(const librds_string_t*, librds_rt_flag_t, void*));
+void librds_register_pi(librds_t *rds, void (*callback_pi)(librds_t*, void*));
+void librds_register_pty(librds_t *rds, void (*callback_pty)(librds_t*, void*));
+void librds_register_tp(librds_t *rds, void (*callback_tp)(librds_t*, void*));
+void librds_register_ta(librds_t *rds, void (*callback_ta)(librds_t*, void*));
+void librds_register_ms(librds_t *rds, void (*callback_ms)(librds_t*, void*));
+void librds_register_ecc(librds_t *rds, void (*callback_ecc)(librds_t*, void*));
+void librds_register_af(librds_t *rds, void (*callback_af)(librds_t*, uint8_t, void*));
+void librds_register_ps(librds_t *rds, void (*callback_ps)(librds_t*, void*));
+void librds_register_rt(librds_t *rds, void (*callback_rt)(librds_t*, librds_rt_flag_t, void*));
 
 uint8_t librds_string_get_length(const librds_string_t *string);
 bool librds_string_get_available(const librds_string_t *string);
