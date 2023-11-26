@@ -11,7 +11,7 @@ set(SOURCE_FILES
         group1.h
         group2.c
         group2.h
-        librds.c
+        librdsparser.c
         parser.c
         parser.h
         string.c
@@ -19,13 +19,13 @@ set(SOURCE_FILES
         utils.c
         utils.h)
 
-add_library(rds SHARED ${SOURCE_FILES})
-set_target_properties(rds PROPERTIES PUBLIC_HEADER librds.h)
+add_library(rdsparser SHARED ${SOURCE_FILES})
+set_target_properties(rdsparser PROPERTIES PUBLIC_HEADER rdsparser.h)
 
-add_library(rds_static STATIC ${SOURCE_FILES})
-set_target_properties(rds_static PROPERTIES PUBLIC_HEADER librds.h)
+add_library(rdsparser_static STATIC ${SOURCE_FILES})
+set_target_properties(rdsparser_static PROPERTIES PUBLIC_HEADER rdsparser.h)
 
-if(LIBRDS_DISABLE_HEAP)
-    set_target_properties(rds PROPERTIES PUBLIC_HEADER librds_private.h)
-    set_target_properties(rds_static PROPERTIES PUBLIC_HEADER librds_private.h)
+if(RDSPARSER_DISABLE_HEAP)
+    set_target_properties(rdsparser PROPERTIES PUBLIC_HEADER rdsparser_private.h)
+    set_target_properties(rdsparser_static PROPERTIES PUBLIC_HEADER rdsparser_private.h)
 endif()

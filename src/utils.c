@@ -1,6 +1,6 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  librds – Radio Data System parser library
+ *  librdsparser – Radio Data System parser library
  *  Copyright (C) 2023  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
@@ -16,30 +16,30 @@
 
 #include <stdint.h>
 #include <string.h>
-#include "librds_private.h"
+#include "rdsparser_private.h"
 
 bool
-librds_utils_convert(const char     *input,
-                     librds_data_t   data_out,
-                     librds_error_t  errors_out)
+rdsparser_utils_convert(const char        *input,
+                        rdsparser_data_t   data_out,
+                        rdsparser_error_t  errors_out)
 {
     const size_t block_string_length = 4;
     const size_t error_string_length = 2;
 
-    const size_t rds_len = LIBRDS_BLOCK_COUNT * block_string_length;
+    const size_t rds_len = RDSPARSER_BLOCK_COUNT * block_string_length;
     const size_t input_len = strlen(input);
     char *end;
 
     if (input_len == rds_len)
     {
-        errors_out[LIBRDS_BLOCK_A] = 0;
-        errors_out[LIBRDS_BLOCK_B] = 0;
-        errors_out[LIBRDS_BLOCK_C] = 0;
-        errors_out[LIBRDS_BLOCK_D] = 0;
+        errors_out[RDSPARSER_BLOCK_A] = 0;
+        errors_out[RDSPARSER_BLOCK_B] = 0;
+        errors_out[RDSPARSER_BLOCK_C] = 0;
+        errors_out[RDSPARSER_BLOCK_D] = 0;
     }
     else if (input_len == rds_len + error_string_length)
     {
-        const char *ptr = input + LIBRDS_BLOCK_COUNT * block_string_length;
+        const char *ptr = input + RDSPARSER_BLOCK_COUNT * block_string_length;
         uint8_t buffer = (uint8_t)strtol(ptr, &end, 16);
 
         if (*end != '\0')
@@ -47,17 +47,17 @@ librds_utils_convert(const char     *input,
             return false;
         }
 
-        errors_out[LIBRDS_BLOCK_A] = (buffer & 192) >> 6;
-        errors_out[LIBRDS_BLOCK_B] = (buffer & 48) >> 4;
-        errors_out[LIBRDS_BLOCK_C] = (buffer & 12) >> 2;
-        errors_out[LIBRDS_BLOCK_D] = (buffer & 3);
+        errors_out[RDSPARSER_BLOCK_A] = (buffer & 192) >> 6;
+        errors_out[RDSPARSER_BLOCK_B] = (buffer & 48) >> 4;
+        errors_out[RDSPARSER_BLOCK_C] = (buffer & 12) >> 2;
+        errors_out[RDSPARSER_BLOCK_D] = (buffer & 3);
     }
     else
     {
         return false;
     }
 
-    for (uint8_t block = 0; block < LIBRDS_BLOCK_COUNT; block++)
+    for (uint8_t block = 0; block < RDSPARSER_BLOCK_COUNT; block++)
     {
         char buffer[block_string_length + 1];
         for (uint8_t i = 0; i < block_string_length; i++)

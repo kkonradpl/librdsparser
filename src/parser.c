@@ -1,6 +1,6 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  librds – Radio Data System parser library
+ *  librdsparser – Radio Data System parser library
  *  Copyright (C) 2023  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
@@ -15,7 +15,7 @@
  */
 
 #include <stdint.h>
-#include "librds_private.h"
+#include "rdsparser_private.h"
 #include "af.h"
 #include "group.h"
 #include "group0.h"
@@ -24,24 +24,24 @@
 #include "string.h"
 
 static bool
-librds_parse_string_chunk(librds_t              *context,
-                          const librds_data_t    data,
-                          const librds_error_t   errors,
-                          uint8_t                position,
-                          librds_block_t         data_block,
-                          librds_text_t          text,
-                          librds_string_t       *string)
+rdsparser_parse_string_chunk(rdsparser_t             *context,
+                             const rdsparser_data_t   data,
+                             const rdsparser_error_t  errors,
+                             uint8_t                  position,
+                             rdsparser_block_t        data_block,
+                             rdsparser_text_t         text,
+                             rdsparser_string_t      *string)
 {
-    if (errors[LIBRDS_BLOCK_B] <= context->correction[text][LIBRDS_BLOCK_TYPE_INFO] &&
-        errors[data_block] <= context->correction[text][LIBRDS_BLOCK_TYPE_DATA])
+    if (errors[RDSPARSER_BLOCK_B] <= context->correction[text][RDSPARSER_BLOCK_TYPE_INFO] &&
+        errors[data_block] <= context->correction[text][RDSPARSER_BLOCK_TYPE_DATA])
     {
         char block[2];
         block[0] = data[data_block] >> 8;
         block[1] = (uint8_t)data[data_block];
 
-        return librds_string_update(string,
+        return rdsparser_string_update(string,
                                     block,
-                                    errors[LIBRDS_BLOCK_B],
+                                    errors[RDSPARSER_BLOCK_B],
                                     errors[data_block],
                                     position,
                                     context->progressive[text],
@@ -52,13 +52,13 @@ librds_parse_string_chunk(librds_t              *context,
 }
 
 static inline void
-librds_parse_group(librds_t             *context,
-                   const librds_data_t   data,
-                   const librds_error_t  errors)
+rdsparser_parse_group(rdsparser_t             *context,
+                      const rdsparser_data_t   data,
+                      const rdsparser_error_t  errors)
 {
-    if (errors[LIBRDS_BLOCK_A] == 0)
+    if (errors[RDSPARSER_BLOCK_A] == 0)
     {
-        uint16_t pi = librds_group_get_pi(data);
+        uint16_t pi = rdsparser_group_get_pi(data);
         if (context->pi != pi)
         {
             context->pi = pi;
@@ -69,9 +69,9 @@ librds_parse_group(librds_t             *context,
         }
     }
 
-    if (errors[LIBRDS_BLOCK_B] == 0)
+    if (errors[RDSPARSER_BLOCK_B] == 0)
     {
-        uint8_t pty = librds_group_get_pty(data);
+        uint8_t pty = rdsparser_group_get_pty(data);
         if (context->pty != pty)
         {
             context->pty = pty;
@@ -81,7 +81,7 @@ librds_parse_group(librds_t             *context,
             }
         }
 
-        bool tp = librds_group_get_tp(data);
+        bool tp = rdsparser_group_get_tp(data);
         if (context->tp != tp)
         {
             context->tp = tp;
@@ -94,13 +94,13 @@ librds_parse_group(librds_t             *context,
 }
 
 static inline void
-librds_parse_group0(librds_t             *context,
-                    const librds_data_t   data,
-                    const librds_error_t  errors)
+rdsparser_parse_group0(rdsparser_t             *context,
+                       const rdsparser_data_t   data,
+                       const rdsparser_error_t  errors)
 {
-    if (errors[LIBRDS_BLOCK_B] == 0)
+    if (errors[RDSPARSER_BLOCK_B] == 0)
     {
-        uint8_t ta = librds_group0_get_ta(data);
+        uint8_t ta = rdsparser_group0_get_ta(data);
         if (context->ta != ta)
         {
             context->ta = ta;
@@ -110,7 +110,7 @@ librds_parse_group0(librds_t             *context,
             }
         }
 
-        bool ms = librds_group0_get_ms(data);
+        bool ms = rdsparser_group0_get_ms(data);
         if (context->ms != ms)
         {
             context->ms = ms;
@@ -121,11 +121,11 @@ librds_parse_group0(librds_t             *context,
         }
     }
 
-    if (errors[LIBRDS_BLOCK_B] == 0 &&
-        errors[LIBRDS_BLOCK_C] == 0)
+    if (errors[RDSPARSER_BLOCK_B] == 0 &&
+        errors[RDSPARSER_BLOCK_C] == 0)
     {
-        uint8_t af1 = librds_group0_get_af1(data);
-        if (librds_af_add(context->af, af1))
+        uint8_t af1 = rdsparser_group0_get_af1(data);
+        if (rdsparser_af_add(context->af, af1))
         {
             if (context->callback_af)
             {
@@ -133,8 +133,8 @@ librds_parse_group0(librds_t             *context,
             }
         }
 
-        uint8_t af2 = librds_group0_get_af2(data);
-        if (librds_af_add(context->af, af2))
+        uint8_t af2 = rdsparser_group0_get_af2(data);
+        if (rdsparser_af_add(context->af, af2))
         {
             if (context->callback_af)
             {
@@ -143,15 +143,14 @@ librds_parse_group0(librds_t             *context,
         }
     }
 
-
     bool changed;
-    const uint8_t position = 2 * librds_group0_get_ps_pos(data);
-    changed = librds_parse_string_chunk(context,
+    const uint8_t position = 2 * rdsparser_group0_get_ps_pos(data);
+    changed = rdsparser_parse_string_chunk(context,
                                         data,
                                         errors,
                                         position,
-                                        LIBRDS_BLOCK_D,
-                                        LIBRDS_TEXT_PS,
+                                        RDSPARSER_BLOCK_D,
+                                        RDSPARSER_TEXT_PS,
                                         context->ps);
 
     if (changed &&
@@ -163,16 +162,16 @@ librds_parse_group0(librds_t             *context,
 }
 
 static inline void
-librds_parse_group1a(librds_t             *context,
-                     const librds_data_t   data,
-                     const librds_error_t  errors)
+rdsparser_parse_group1a(rdsparser_t             *context,
+                        const rdsparser_data_t   data,
+                        const rdsparser_error_t  errors)
 {
-    if (errors[LIBRDS_BLOCK_B] == 0 &&
-        errors[LIBRDS_BLOCK_C] == 0)
+    if (errors[RDSPARSER_BLOCK_B] == 0 &&
+        errors[RDSPARSER_BLOCK_C] == 0)
     {
-        if (librds_group1a_get_variant(data) == 0)
+        if (rdsparser_group1a_get_variant(data) == 0)
         {
-            uint8_t ecc = librds_group1a0_get_ecc(data);
+            uint8_t ecc = rdsparser_group1a0_get_ecc(data);
             if (context->ecc != ecc)
             {
                 context->ecc = ecc;
@@ -186,29 +185,29 @@ librds_parse_group1a(librds_t             *context,
 }
 
 static inline void
-librds_parse_group2(librds_t             *context,
-                    const librds_data_t   data,
-                    const librds_error_t  errors,
-                    librds_group_flag_t   flag)
+rdsparser_parse_group2(rdsparser_t             *context,
+                       const rdsparser_data_t   data,
+                       const rdsparser_error_t  errors,
+                       rdsparser_group_flag_t   flag)
 {
-    librds_rt_flag_t rt_flag = librds_group2_get_rt_flag(data);
-    uint8_t rt_pos = librds_group2_get_rt_pos(data);
+    rdsparser_rt_flag_t rt_flag = rdsparser_group2_get_rt_flag(data);
+    uint8_t rt_pos = rdsparser_group2_get_rt_pos(data);
     bool changed = false;
 
-    if (errors[LIBRDS_BLOCK_B] == 0 &&
+    if (errors[RDSPARSER_BLOCK_B] == 0 &&
         rt_flag != context->last_rt_flag)
     {
         if (context->last_rt_flag != -1 &&
-            librds_string_get_available(context->rt[rt_flag]))
+            rdsparser_string_get_available(context->rt[rt_flag]))
         {
-            librds_string_clear(context->rt[rt_flag]);
+            rdsparser_string_clear(context->rt[rt_flag]);
             changed = true;
         }
 
         context->last_rt_flag = rt_flag;
     }
 
-    if (errors[LIBRDS_BLOCK_B] != 0 &&
+    if (errors[RDSPARSER_BLOCK_B] != 0 &&
         rt_flag != context->last_rt_flag &&
         context->last_rt_flag != -1)
     {
@@ -216,34 +215,34 @@ librds_parse_group2(librds_t             *context,
         return;
     }
 
-    if (flag == LIBRDS_GROUP_FLAG_A)
+    if (flag == RDSPARSER_GROUP_FLAG_A)
     {
         const uint8_t position = 4 * rt_pos;
-        changed |= librds_parse_string_chunk(context,
+        changed |= rdsparser_parse_string_chunk(context,
                                              data,
                                              errors,
                                              position,
-                                             LIBRDS_BLOCK_C,
-                                             LIBRDS_TEXT_RT,
+                                             RDSPARSER_BLOCK_C,
+                                             RDSPARSER_TEXT_RT,
                                              context->rt[rt_flag]);
 
-        changed |= librds_parse_string_chunk(context,
+        changed |= rdsparser_parse_string_chunk(context,
                                              data,
                                              errors,
                                              position + 2,
-                                             LIBRDS_BLOCK_D,
-                                             LIBRDS_TEXT_RT,
+                                             RDSPARSER_BLOCK_D,
+                                             RDSPARSER_TEXT_RT,
                                              context->rt[rt_flag]);
     }
     else
     {
         const uint8_t position = 2 * rt_pos;
-        changed |= librds_parse_string_chunk(context,
+        changed |= rdsparser_parse_string_chunk(context,
                                              data,
                                              errors,
                                              position,
-                                             LIBRDS_BLOCK_D,
-                                             LIBRDS_TEXT_RT,
+                                             RDSPARSER_BLOCK_D,
+                                             RDSPARSER_TEXT_RT,
                                              context->rt[rt_flag]);
     }
 
@@ -257,28 +256,28 @@ librds_parse_group2(librds_t             *context,
 }
 
 void
-librds_parser_process(librds_t             *context,
-                      const librds_data_t   data,
-                      const librds_error_t  errors)
+rdsparser_parser_process(rdsparser_t             *context,
+                         const rdsparser_data_t   data,
+                         const rdsparser_error_t  errors)
 {
-    uint8_t group = librds_group_get_group(data);
-    librds_group_flag_t flag = librds_group_get_flag(data);
+    uint8_t group = rdsparser_group_get_group(data);
+    rdsparser_group_flag_t flag = rdsparser_group_get_flag(data);
 
-    librds_parse_group(context, data, errors);
+    rdsparser_parse_group(context, data, errors);
 
     if (group == 0)
     {
-        librds_parse_group0(context, data, errors);
+        rdsparser_parse_group0(context, data, errors);
     }
     else if (group == 1)
     {
-        if (flag == LIBRDS_GROUP_FLAG_A)
+        if (flag == RDSPARSER_GROUP_FLAG_A)
         {
-            librds_parse_group1a(context, data, errors);
+            rdsparser_parse_group1a(context, data, errors);
         }
     }
     else if (group == 2)
     {
-        librds_parse_group2(context, data, errors, flag);
+        rdsparser_parse_group2(context, data, errors, flag);
     }
 }

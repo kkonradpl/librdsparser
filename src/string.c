@@ -1,6 +1,6 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  librds – Radio Data System parser library
+ *  librdsparser – Radio Data System parser library
  *  Copyright (C) 2023  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
@@ -16,29 +16,29 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "librds_private.h"
+#include "rdsparser_private.h"
 #include "string.h"
 
 void
-librds_string_init(librds_string_t *string,
-                   uint8_t          max_length)
+rdsparser_string_init(rdsparser_string_t *string,
+                      uint8_t             max_length)
 {
     *string = max_length;
 }
 
 static uint8_t
-librds_string_get_size(const librds_string_t *string)
+rdsparser_string_get_size(const rdsparser_string_t *string)
 {
     return (uint8_t)string[0];
 }
 
 uint8_t
-librds_string_get_length(const librds_string_t *string)
+rdsparser_string_get_length(const rdsparser_string_t *string)
 {
-    const uint8_t size = librds_string_get_size(string);
+    const uint8_t size = rdsparser_string_get_size(string);
     for (uint8_t i = 0; i < size; i++)
     {
-        const librds_string_char_t *content = librds_string_get_content(string);
+        const rdsparser_string_char_t *content = rdsparser_string_get_content(string);
         if (content[i] == '\0')
         {
             return i;
@@ -48,28 +48,28 @@ librds_string_get_length(const librds_string_t *string)
     return size;
 }
 
-const librds_string_char_t*
-librds_string_get_content(const librds_string_t *string)
+const rdsparser_string_char_t*
+rdsparser_string_get_content(const rdsparser_string_t *string)
 {
     return (string + 1);
 }
 
-const librds_string_error_t*
-librds_string_get_errors(const librds_string_t *string)
+const rdsparser_string_error_t*
+rdsparser_string_get_errors(const rdsparser_string_t *string)
 {
-    const uint8_t size = librds_string_get_size(string);
+    const uint8_t size = rdsparser_string_get_size(string);
     return (uint8_t*)(string + 1 + size + 1);
 }
 
 bool
-librds_string_get_available(const librds_string_t *string)
+rdsparser_string_get_available(const rdsparser_string_t *string)
 {
-    const uint8_t size = librds_string_get_size(string);
-    const librds_string_error_t *errors = librds_string_get_errors(string);
+    const uint8_t size = rdsparser_string_get_size(string);
+    const rdsparser_string_error_t *errors = rdsparser_string_get_errors(string);
 
     for (uint8_t i = 0; i < size; i++)
     {
-        if (errors[i] != LIBRDS_STRING_ERROR_UNCORRECTABLE)
+        if (errors[i] != RDSPARSER_STRING_ERROR_UNCORRECTABLE)
         {
             return true;
         }
@@ -79,36 +79,36 @@ librds_string_get_available(const librds_string_t *string)
 }
 
 void
-librds_string_clear(librds_string_t *string)
+rdsparser_string_clear(rdsparser_string_t *string)
 {
-    const uint8_t size = librds_string_get_size(string);
-    librds_string_char_t *content = (librds_string_char_t*)librds_string_get_content(string);
-    librds_string_error_t *errors = (librds_string_error_t*)librds_string_get_errors(string);
+    const uint8_t size = rdsparser_string_get_size(string);
+    rdsparser_string_char_t *content = (rdsparser_string_char_t*)rdsparser_string_get_content(string);
+    rdsparser_string_error_t *errors = (rdsparser_string_error_t*)rdsparser_string_get_errors(string);
 
     for (uint8_t i = 0; i < size; i++)
     {
         content[i] = ' ';
-        errors[i] = LIBRDS_STRING_ERROR_UNCORRECTABLE;
+        errors[i] = RDSPARSER_STRING_ERROR_UNCORRECTABLE;
     }
 }
 
-static librds_string_error_t
-librds_string_calculate_error(librds_block_error_t info_error,
-                              librds_block_error_t data_error)
+static rdsparser_string_error_t
+rdsparser_string_calculate_error(rdsparser_block_error_t info_error,
+                                 rdsparser_block_error_t data_error)
 {
     const uint8_t value = 2 * info_error + 3 * data_error;
-    return (librds_string_error_t)(value ? value - 1 : 0);
+    return (rdsparser_string_error_t)(value ? value - 1 : 0);
 }
 
-static librds_string_char_t
-librds_string_convert(uint8_t input)
+static rdsparser_string_char_t
+rdsparser_string_convert(uint8_t input)
 {
     if (input == '\r')
     {
         return '\0';
     }
 
-#ifdef LIBRDS_DISABLE_UNICODE
+#ifdef RDSPARSER_DISABLE_UNICODE
     return input;
 #else
     const uint8_t offset = 0x20;
@@ -151,17 +151,17 @@ librds_string_convert(uint8_t input)
 }
 
 static bool
-librds_string_update_single(librds_string_t       *string,
-                            uint8_t                input,
-                            librds_block_error_t   info_error,
-                            librds_block_error_t   data_error,
-                            uint8_t                position,
-                            bool                   progressive,
-                            bool                   allow_eol)
+rdsparser_string_update_single(rdsparser_string_t      *string,
+                               uint8_t                  input,
+                               rdsparser_block_error_t  info_error,
+                               rdsparser_block_error_t  data_error,
+                               uint8_t                  position,
+                               bool                     progressive,
+                               bool                     allow_eol)
 {
-    librds_string_char_t *output = (librds_string_char_t*)librds_string_get_content(string);
-    librds_string_error_t *output_errors = (librds_string_error_t*)librds_string_get_errors(string);
-    librds_string_error_t error = librds_string_calculate_error(info_error, data_error);
+    rdsparser_string_char_t *output = (rdsparser_string_char_t*)rdsparser_string_get_content(string);
+    rdsparser_string_error_t *output_errors = (rdsparser_string_error_t*)rdsparser_string_get_errors(string);
+    rdsparser_string_error_t error = rdsparser_string_calculate_error(info_error, data_error);
 
     if (progressive &&
         output_errors[position] < error)
@@ -173,8 +173,8 @@ librds_string_update_single(librds_string_t       *string,
     if (input == '\r')
     {
         if (!allow_eol ||
-            info_error != LIBRDS_BLOCK_ERROR_NONE ||
-            data_error != LIBRDS_BLOCK_ERROR_NONE)
+            info_error != RDSPARSER_BLOCK_ERROR_NONE ||
+            data_error != RDSPARSER_BLOCK_ERROR_NONE)
         {
             /* Only error-free line endings */
             return false;
@@ -188,18 +188,18 @@ librds_string_update_single(librds_string_t       *string,
 
     if (input >= 0x7F)
     {
-        if (data_error != LIBRDS_BLOCK_ERROR_NONE)
+        if (data_error != RDSPARSER_BLOCK_ERROR_NONE)
         {
             /* Special characters are used rarely,
                so use only error-free data */
             return false;
         }
-#ifdef LIBRDS_DISABLE_UNICODE
+#ifdef RDSPARSER_DISABLE_UNICODE
         input = ' ';
 #endif
     }
 
-    librds_string_char_t character = librds_string_convert(input);
+    rdsparser_string_char_t character = rdsparser_string_convert(input);
     if (output[position] == character &&
         output_errors[position] <= error)
     {
@@ -213,26 +213,26 @@ librds_string_update_single(librds_string_t       *string,
 }
 
 bool
-librds_string_update(librds_string_t       *string,
-                     const char             input[2],
-                     librds_block_error_t   info_error,
-                     librds_block_error_t   data_error,
-                     uint8_t                position,
-                     bool                   progressive,
-                     bool                   allow_eol)
+rdsparser_string_update(rdsparser_string_t      *string,
+                        const char               input[2],
+                        rdsparser_block_error_t  info_error,
+                        rdsparser_block_error_t  data_error,
+                        uint8_t                  position,
+                        bool                     progressive,
+                        bool                     allow_eol)
 {
     const uint8_t chunk_length = 2;
     bool changed = false;
 
     for (uint8_t i = 0; i < chunk_length; i++)
     {
-        changed |= librds_string_update_single(string,
-                                               input[i],
-                                               info_error,
-                                               data_error,
-                                               position + i,
-                                               progressive,
-                                               allow_eol);
+        changed |= rdsparser_string_update_single(string,
+                                                  input[i],
+                                                  info_error,
+                                                  data_error,
+                                                  position + i,
+                                                  progressive,
+                                                  allow_eol);
     }
 
     return changed;

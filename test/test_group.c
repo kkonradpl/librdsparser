@@ -1,6 +1,6 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  librds – Radio Data System parser library
+ *  librdsparser – Radio Data System parser library
  *  Copyright (C) 2023  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
@@ -26,82 +26,82 @@
 static void
 group_test_get_pi(void **state)
 {
-    librds_data_t data;
+    rdsparser_data_t data;
     data[0] = 0x1234;
 
-    assert_int_equal(librds_group_get_pi(data), data[0]);
+    assert_int_equal(rdsparser_group_get_pi(data), data[0]);
 }
 
 static void
 group_test_get_group_2(void **state)
 {
-    librds_data_t data;
+    rdsparser_data_t data;
     data[1] = 0x2556;
 
-    assert_int_equal(librds_group_get_group(data), 2);
+    assert_int_equal(rdsparser_group_get_group(data), 2);
 }
 
 static void
 group_test_get_group_15(void **state)
 {
-    librds_data_t data;
+    rdsparser_data_t data;
     data[1] = 0xF808;
 
-    assert_int_equal(librds_group_get_group(data), 15);
+    assert_int_equal(rdsparser_group_get_group(data), 15);
 }
 
 static void
 group_test_get_flag_a(void **state)
 {
-    librds_data_t data;
+    rdsparser_data_t data;
     data[1] = 0xE00E;
 
-    assert_int_equal(librds_group_get_flag(data), LIBRDS_GROUP_FLAG_A);
+    assert_int_equal(rdsparser_group_get_flag(data), RDSPARSER_GROUP_FLAG_A);
 }
 
 static void
 group_test_get_flag_b(void **state)
 {
-    librds_data_t data;
+    rdsparser_data_t data;
     data[1] = 0xE800;
 
-    assert_int_equal(librds_group_get_flag(data), LIBRDS_GROUP_FLAG_B);
+    assert_int_equal(rdsparser_group_get_flag(data), RDSPARSER_GROUP_FLAG_B);
 }
 
 static void
 group_test_get_pty_0(void **state)
 {
-    librds_data_t data;
+    rdsparser_data_t data;
     data[1] = 0x040F;
 
-    assert_int_equal(librds_group_get_pty(data), 0);
+    assert_int_equal(rdsparser_group_get_pty(data), 0);
 }
 
 static void
 group_test_get_pty_10(void **state)
 {
-    librds_data_t data;
+    rdsparser_data_t data;
     data[1] = 0x054A;
 
-    assert_int_equal(librds_group_get_pty(data), 10);
+    assert_int_equal(rdsparser_group_get_pty(data), 10);
 }
 
 static void
 group_test_get_tp_true(void **state)
 {
-    librds_data_t data;
+    rdsparser_data_t data;
     data[1] = 0x2556;
 
-    assert_int_equal(librds_group_get_tp(data), true);
+    assert_int_equal(rdsparser_group_get_tp(data), true);
 }
 
 static void
 group_test_get_tp_false(void **state)
 {
-    librds_data_t data;
+    rdsparser_data_t data;
     data[1] = 0xE800;
 
-    assert_int_equal(librds_group_get_tp(data), false);
+    assert_int_equal(rdsparser_group_get_tp(data), false);
 }
 
 const struct CMUnitTest tests[] =

@@ -1,6 +1,6 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  librds – Radio Data System parser library
+ *  librdsparser – Radio Data System parser library
  *  Copyright (C) 2023  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
@@ -19,17 +19,17 @@
 #include "af.h"
 
 bool
-librds_af_add(librds_af_t buffer,
-              uint8_t     af)
+rdsparser_af_add(rdsparser_af_t buffer,
+                 uint8_t        new_af)
 {
-    if (af == 0 ||
-        af > 204)
+    if (new_af == 0 ||
+        new_af > 204)
     {
         return false;
     }
 
-    const uint8_t pos = af / 8;
-    const uint8_t bitPos = af % 8;
+    const uint8_t pos = new_af / 8;
+    const uint8_t bitPos = new_af % 8;
 
     const bool exists = buffer[pos] & (0x80 >> bitPos);
     if (!exists)
@@ -42,9 +42,9 @@ librds_af_add(librds_af_t buffer,
 }
 
 void
-librds_af_clear(librds_af_t buffer)
+rdsparser_af_clear(rdsparser_af_t buffer)
 {
-    for (uint8_t i = 0; i < LIBRDS_AF_BUFFER_SIZE; i++)
+    for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
     {
         buffer[i] = 0;
     }

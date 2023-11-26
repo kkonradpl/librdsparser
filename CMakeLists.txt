@@ -1,27 +1,29 @@
 cmake_minimum_required(VERSION 3.6)
-project(librds)
-option(LIBRDS_DISABLE_HEAP "Disable heap allocator (librds_new/free)" OFF)
-option(LIBRDS_DISABLE_UNICODE "Disable unicode support" OFF)
-option(LIBRDS_DISABLE_TESTS "Disable tests" OFF)
-option(LIBRDS_DISABLE_EXAMPLES "Disable examples" OFF)
-
-if(LIBRDS_DISABLE_HEAP)
-    add_definitions(-DLIBRDS_DISABLE_HEAP)
-endif()
-
-if(LIBRDS_DISABLE_UNICODE)
-    add_definitions(-DLIBRDS_DISABLE_UNICODE)
-endif()
-
-include_directories(librds PRIVATE include)
+project(librdsparser)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic")
 
-if(NOT LIBRDS_DISABLE_TESTS)
+option(RDSPARSER_DISABLE_HEAP "Disable heap allocator (rdsparser_new/free)" OFF)
+option(RDSPARSER_DISABLE_UNICODE "Disable unicode support" OFF)
+
+option(RDSPARSER_DISABLE_TESTS "Disable tests" OFF)
+option(RDSPARSER_DISABLE_EXAMPLES "Disable examples" OFF)
+
+if(RDSPARSER_DISABLE_HEAP)
+    add_definitions(-DRDSPARSER_DISABLE_HEAP)
+endif()
+
+if(RDSPARSER_DISABLE_UNICODE)
+    add_definitions(-DRDSPARSER_DISABLE_UNICODE)
+endif()
+
+include_directories(librdsparser PRIVATE include)
+
+if(NOT RDSPARSER_DISABLE_TESTS)
     enable_testing()
     add_subdirectory(test)
 endif()
 
-if(NOT LIBRDS_DISABLE_EXAMPLES)
+if(NOT RDSPARSER_DISABLE_EXAMPLES)
     add_subdirectory(examples)
 endif()
 

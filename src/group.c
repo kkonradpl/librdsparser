@@ -1,6 +1,6 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  librds – Radio Data System parser library
+ *  librdsparser – Radio Data System parser library
  *  Copyright (C) 2023  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
@@ -15,35 +15,35 @@
  */
 
 #include <stdint.h>
-#include "librds_private.h"
+#include "rdsparser_private.h"
 #include "group.h"
 
 uint16_t
-librds_group_get_pi(const librds_data_t data)
+rdsparser_group_get_pi(const rdsparser_data_t data)
 {
-    return data[LIBRDS_BLOCK_A];
+    return data[RDSPARSER_BLOCK_A];
 }
 
 uint8_t
-librds_group_get_group(const librds_data_t data)
+rdsparser_group_get_group(const rdsparser_data_t data)
 {
-    return (data[LIBRDS_BLOCK_B] & 0xF000) >> 12;
+    return (data[RDSPARSER_BLOCK_B] & 0xF000) >> 12;
 }
 
-librds_group_flag_t
-librds_group_get_flag(const librds_data_t data)
+rdsparser_group_flag_t
+rdsparser_group_get_flag(const rdsparser_data_t data)
 {
-    return (data[LIBRDS_BLOCK_B] & 0x0800) >> 11;
-}
-
-uint8_t
-librds_group_get_pty(const librds_data_t data)
-{
-    return (data[LIBRDS_BLOCK_B] & 0x03E0) >> 5;
+    return (data[RDSPARSER_BLOCK_B] & 0x0800) >> 11;
 }
 
 uint8_t
-librds_group_get_tp(const librds_data_t data)
+rdsparser_group_get_pty(const rdsparser_data_t data)
 {
-    return (data[LIBRDS_BLOCK_B] & 0x400) >> 10;
+    return (data[RDSPARSER_BLOCK_B] & 0x03E0) >> 5;
+}
+
+uint8_t
+rdsparser_group_get_tp(const rdsparser_data_t data)
+{
+    return (data[RDSPARSER_BLOCK_B] & 0x400) >> 10;
 }

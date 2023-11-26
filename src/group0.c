@@ -1,6 +1,6 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  librds – Radio Data System parser library
+ *  librdsparser – Radio Data System parser library
  *  Copyright (C) 2023  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,35 +14,35 @@
  *  Lesser General Public License for more details.
  */
 
-#include "librds_private.h"
+#include "rdsparser_private.h"
 
 bool
-librds_group0_get_ta(const librds_data_t data)
+rdsparser_group0_get_ta(const rdsparser_data_t data)
 {
-    return (data[LIBRDS_BLOCK_B] & 0x10) >> 4;
+    return (data[RDSPARSER_BLOCK_B] & 0x10) >> 4;
 }
 
 bool
-librds_group0_get_ms(const librds_data_t data)
+rdsparser_group0_get_ms(const rdsparser_data_t data)
 {
-    return (data[LIBRDS_BLOCK_B] & 0x8) >> 3;
+    return (data[RDSPARSER_BLOCK_B] & 0x8) >> 3;
 }
 
 uint8_t
-librds_group0_get_af1(const librds_data_t data)
+rdsparser_group0_get_af1(const rdsparser_data_t data)
 {
-    return data[LIBRDS_BLOCK_C] >> 8;
+    return data[RDSPARSER_BLOCK_C] >> 8;
 }
 
 uint8_t
-librds_group0_get_af2(const librds_data_t data)
+rdsparser_group0_get_af2(const rdsparser_data_t data)
 {
-    return (uint8_t)data[LIBRDS_BLOCK_C];
+    return (uint8_t)data[RDSPARSER_BLOCK_C];
 }
 
 uint8_t
-librds_group0_get_ps_pos(const librds_data_t data)
+rdsparser_group0_get_ps_pos(const rdsparser_data_t data)
 {
-    return data[LIBRDS_BLOCK_B] & 3;
+    return data[RDSPARSER_BLOCK_B] & 3;
 }
 

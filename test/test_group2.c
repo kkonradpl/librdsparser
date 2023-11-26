@@ -1,6 +1,6 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  librds – Radio Data System parser library
+ *  librdsparser – Radio Data System parser library
  *  Copyright (C) 2023  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
@@ -26,37 +26,37 @@
 static void
 group2_test_get_rt_pos_0(void **state)
 {
-    librds_data_t data;
+    rdsparser_data_t data;
     data[1] = 0x2550;
 
-    assert_int_equal(librds_group2_get_rt_pos(data), 0);
+    assert_int_equal(rdsparser_group2_get_rt_pos(data), 0);
 }
 
 static void
 group2_test_get_rt_pos_15(void **state)
 {
-    librds_data_t data;
+    rdsparser_data_t data;
     data[1] = 0x27FF;
 
-    assert_int_equal(librds_group2_get_rt_pos(data), 15);
+    assert_int_equal(rdsparser_group2_get_rt_pos(data), 15);
 }
 
 static void
 group2_test_get_rt_flag_true(void **state)
 {
-    librds_data_t data;
+    rdsparser_data_t data;
     data[1] = 0x2550;
 
-    assert_int_equal(librds_group2_get_rt_flag(data), true);
+    assert_int_equal(rdsparser_group2_get_rt_flag(data), true);
 }
 
 static void
 group2_test_get_rt_flag_false(void **state)
 {
-    librds_data_t data;
+    rdsparser_data_t data;
     data[1] = 0x200F;
 
-    assert_int_equal(librds_group2_get_rt_flag(data), false);
+    assert_int_equal(rdsparser_group2_get_rt_flag(data), false);
 }
 
 const struct CMUnitTest tests[] =

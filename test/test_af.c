@@ -1,6 +1,6 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  librds – Radio Data System parser library
+ *  librdsparser – Radio Data System parser library
  *  Copyright (C) 2023  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
@@ -24,7 +24,7 @@
 #include "af.c"
 
 typedef struct {
-    librds_af_t af_buffer;
+    rdsparser_af_t af_buffer;
 } test_context_t;
 
 static int
@@ -47,7 +47,7 @@ static int
 test_setup(void **state)
 {
     test_context_t *ctx = *state;
-    librds_af_clear(ctx->af_buffer);
+    rdsparser_af_clear(ctx->af_buffer);
     return 0;
 }
 
@@ -66,8 +66,8 @@ af_test_add_each_frequency(void **state)
 
     for (uint8_t i = 1; i <= 204; i++)
     {
-        assert_int_equal(librds_af_add(ctx->af_buffer, i), true);
-        assert_int_equal(librds_af_add(ctx->af_buffer, i), false);
+        assert_int_equal(rdsparser_af_add(ctx->af_buffer, i), true);
+        assert_int_equal(rdsparser_af_add(ctx->af_buffer, i), false);
     }
 }
 
@@ -77,9 +77,9 @@ af_test_add_one_frequency(void **state)
     test_context_t *ctx = *state;
 
     const uint8_t id = 123;
-    assert_int_equal(librds_af_add(ctx->af_buffer, id), true);
+    assert_int_equal(rdsparser_af_add(ctx->af_buffer, id), true);
 
-    for (uint8_t i = 0; i < LIBRDS_AF_BUFFER_SIZE; i++)
+    for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
     {
         if (i == (id / 8))
         {
@@ -91,7 +91,7 @@ af_test_add_one_frequency(void **state)
         }
     }
 
-    assert_int_equal(librds_af_add(ctx->af_buffer, id), false);
+    assert_int_equal(rdsparser_af_add(ctx->af_buffer, id), false);
 }
 
 static void
@@ -100,9 +100,9 @@ af_test_add_clear_add(void **state)
     test_context_t *ctx = *state;
 
     const uint8_t id = 200;
-    assert_int_equal(librds_af_add(ctx->af_buffer, id), true);
-    librds_af_clear(ctx->af_buffer);
-    assert_int_equal(librds_af_add(ctx->af_buffer, id), true);
+    assert_int_equal(rdsparser_af_add(ctx->af_buffer, id), true);
+    rdsparser_af_clear(ctx->af_buffer);
+    assert_int_equal(rdsparser_af_add(ctx->af_buffer, id), true);
 }
 
 static void
@@ -111,9 +111,9 @@ af_test_add_invalid_0(void **state)
     test_context_t *ctx = *state;
 
     const uint8_t id = 0;
-    assert_int_equal(librds_af_add(ctx->af_buffer, id), false);
+    assert_int_equal(rdsparser_af_add(ctx->af_buffer, id), false);
 
-    for (uint8_t i = 0; i < LIBRDS_AF_BUFFER_SIZE; i++)
+    for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
     {
         assert_int_equal(ctx->af_buffer[i], 0);
     }
@@ -126,10 +126,10 @@ af_test_add_invalid(void **state)
 
     for (uint8_t id = 205; id != 0; id++)
     {
-        assert_int_equal(librds_af_add(ctx->af_buffer, id), false);
+        assert_int_equal(rdsparser_af_add(ctx->af_buffer, id), false);
     }
 
-    for (uint8_t i = 0; i < LIBRDS_AF_BUFFER_SIZE; i++)
+    for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
     {
         assert_int_equal(ctx->af_buffer[i], 0);
     }

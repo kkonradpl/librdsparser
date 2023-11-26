@@ -1,6 +1,6 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  librds – Radio Data System parser library
+ *  librdsparser – Radio Data System parser library
  *  Copyright (C) 2023  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,16 +14,16 @@
  *  Lesser General Public License for more details.
  */
 
-#include "librds_private.h"
+#include "rdsparser_private.h"
 
 uint8_t
-librds_group2_get_rt_pos(const librds_data_t data)
+rdsparser_group2_get_rt_pos(const rdsparser_data_t data)
 {
-    return (data[LIBRDS_BLOCK_B] & 15);
+    return (data[RDSPARSER_BLOCK_B] & 15);
 }
 
 bool
-librds_group2_get_rt_flag(const librds_data_t data)
+rdsparser_group2_get_rt_flag(const rdsparser_data_t data)
 {
-    return (data[LIBRDS_BLOCK_B] & 16) >> 4;
+    return (data[RDSPARSER_BLOCK_B] & 16) >> 4;
 }

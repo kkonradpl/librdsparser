@@ -1,6 +1,6 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
- *  librds – Radio Data System parser library
+ *  librdsparser – Radio Data System parser library
  *  Copyright (C) 2023  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
@@ -16,7 +16,7 @@
 
 #include <stdio.h>
 #include <locale.h>
-#include "librds.h"
+#include "rdsparser.h"
 
 static const char *rds_data[] =
 {
@@ -115,49 +115,49 @@ static const char *rds_data[] =
 };
 
 static void
-callback_pi(librds_t *rds,
+callback_pi(rdsparser_t *rds,
             void     *user_data)
 {
-    printf("PI: %04X\n", librds_get_pi(rds));
+    printf("PI: %04X\n", rdsparser_get_pi(rds));
 }
 
 static void
-callback_pty(librds_t *rds,
+callback_pty(rdsparser_t *rds,
              void     *user_data)
 {
-    printf("PTY: %d\n", librds_get_pty(rds));
+    printf("PTY: %d\n", rdsparser_get_pty(rds));
 }
 
 static void
-callback_tp(librds_t *rds,
+callback_tp(rdsparser_t *rds,
             void     *user_data)
 {
-    printf("TP: %d\n", librds_get_tp(rds));
+    printf("TP: %d\n", rdsparser_get_tp(rds));
 }
 
 static void
-callback_ta(librds_t *rds,
+callback_ta(rdsparser_t *rds,
             void     *user_data)
 {
-    printf("TA: %d\n", librds_get_ta(rds));
+    printf("TA: %d\n", rdsparser_get_ta(rds));
 }
 
 static void
-callback_ms(librds_t *rds,
+callback_ms(rdsparser_t *rds,
             void     *user_data)
 {
-    printf("MS: %d\n", librds_get_ms(rds));
+    printf("MS: %d\n", rdsparser_get_ms(rds));
 }
 
 static void
-callback_ecc(librds_t *rds,
+callback_ecc(rdsparser_t *rds,
              void     *user_data)
 {
-    printf("ECC: %d\n", librds_get_ecc(rds));
+    printf("ECC: %d\n", rdsparser_get_ecc(rds));
 }
 
 static void
-callback_af(librds_t *rds,
+callback_af(rdsparser_t *rds,
             uint8_t   new_af,
             void     *user_data)
 {
@@ -165,12 +165,12 @@ callback_af(librds_t *rds,
 }
 
 static void
-callback_ps(librds_t *rds,
+callback_ps(rdsparser_t *rds,
             void     *user_data)
 {
-    const librds_string_t *ps = librds_get_ps(rds);
-    const librds_string_char_t *ps_content = librds_string_get_content(ps);
-#ifdef LIBRDS_DISABLE_UNICODE
+    const rdsparser_string_t *ps = rdsparser_get_ps(rds);
+    const rdsparser_string_char_t *ps_content = rdsparser_string_get_content(ps);
+#ifdef RDSPARSER_DISABLE_UNICODE
     printf("PS: %s\n", ps_content);
 #else
     printf("PS: %ls\n", ps_content);
@@ -178,13 +178,13 @@ callback_ps(librds_t *rds,
 }
 
 static void
-callback_rt(librds_t         *rds,
-            librds_rt_flag_t  flag,
+callback_rt(rdsparser_t         *rds,
+            rdsparser_rt_flag_t  flag,
             void             *user_data)
 {
-    const librds_string_t *rt = librds_get_rt(rds, flag);
-    const librds_string_char_t *rt_content = librds_string_get_content(rt);
-#ifdef LIBRDS_DISABLE_UNICODE
+    const rdsparser_string_t *rt = rdsparser_get_rt(rds, flag);
+    const rdsparser_string_char_t *rt_content = rdsparser_string_get_content(rt);
+#ifdef RDSPARSER_DISABLE_UNICODE
     printf("RT%d: %s\n", flag, rt_content);
 #else
     printf("RT%d: %ls\n", flag, rt_content);
@@ -195,42 +195,42 @@ int
 main(int   argc,
      char* argv[])
 {
-#ifdef LIBRDS_DISABLE_HEAP
-    librds_t buffer;
-    librds_init(&buffer);
-    librds_t *rds = &buffer;
+#ifdef RDSPARSER_DISABLE_HEAP
+    rdsparser_t buffer;
+    rdsparser_init(&buffer);
+    rdsparser_t *rds = &buffer;
 #else
-    librds_t *rds = librds_new();
+    rdsparser_t *rds = rdsparser_new();
     if (rds == NULL)
     {
         return -1;
     }
 #endif
 
-#ifndef LIBRDS_DISABLE_UNICODE
+#ifndef RDSPARSER_DISABLE_UNICODE
     setlocale(LC_ALL, "");
     printf("Version: Unicode\n");
 #else
     printf("Version: ASCII\n");
 #endif
 
-    librds_register_pi(rds, callback_pi);
-    librds_register_pty(rds, callback_pty);
-    librds_register_tp(rds, callback_tp);
-    librds_register_ta(rds, callback_ta);
-    librds_register_ms(rds, callback_ms);
-    librds_register_ecc(rds, callback_ecc);
-    librds_register_af(rds, callback_af);
-    librds_register_ps(rds, callback_ps);
-    librds_register_rt(rds, callback_rt);
+    rdsparser_register_pi(rds, callback_pi);
+    rdsparser_register_pty(rds, callback_pty);
+    rdsparser_register_tp(rds, callback_tp);
+    rdsparser_register_ta(rds, callback_ta);
+    rdsparser_register_ms(rds, callback_ms);
+    rdsparser_register_ecc(rds, callback_ecc);
+    rdsparser_register_af(rds, callback_af);
+    rdsparser_register_ps(rds, callback_ps);
+    rdsparser_register_rt(rds, callback_rt);
 
     for (size_t i = 0; i < sizeof(rds_data) / sizeof(char*); i++)
     {
-        librds_parse_string(rds, rds_data[i]);
+        rdsparser_parse_string(rds, rds_data[i]);
     }
 
-#ifndef LIBRDS_DISABLE_HEAP
-    librds_free(rds);
+#ifndef RDSPARSER_DISABLE_HEAP
+    rdsparser_free(rds);
 #endif
     return 0;
 }
