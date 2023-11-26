@@ -116,8 +116,8 @@ typedef int8_t rdsparser_ms_t;
 enum rdsparser_ms
 {
     RDSPARSER_MS_UNKNOWN = -1,
-    RDSPARSER_MS_MUSIC = 0,
-    RDSPARSER_MS_SPEECH = 1
+    RDSPARSER_MS_SPEECH = 0,
+    RDSPARSER_MS_MUSIC = 1
 };
 
 typedef int16_t rdsparser_ecc_t;
