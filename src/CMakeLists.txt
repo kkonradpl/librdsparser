@@ -11,7 +11,7 @@ set(SOURCE_FILES
         group1.h
         group2.c
         group2.h
-        librdsparser.c
+        rdsparser.c
         parser.c
         parser.h
         string.c
