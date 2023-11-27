@@ -46,6 +46,7 @@ struct librdsparser
     rdsparser_af_t af;
     rdsparser_string_t ps[RDSPARSER_STRING_SIZE(RDSPARSER_PS_LENGTH)];
     rdsparser_string_t rt[RDSPARSER_RT_FLAG_COUNT][RDSPARSER_STRING_SIZE(RDSPARSER_RT_LENGTH)];
+    rdsparser_string_t ptyn[RDSPARSER_STRING_SIZE(RDSPARSER_PTYN_LENGTH)];
 
     /* Settings */
     bool progressive[RDSPARSER_TEXT_COUNT];
@@ -62,6 +63,7 @@ struct librdsparser
     void (*callback_af)(rdsparser_t*, uint32_t, void*);
     void (*callback_ps)(rdsparser_t*, void*);
     void (*callback_rt)(rdsparser_t*, rdsparser_rt_flag_t, void*);
+    void (*callback_ptyn)(rdsparser_t*, void*);
 
     /* Other data */
     int8_t last_rt_flag;

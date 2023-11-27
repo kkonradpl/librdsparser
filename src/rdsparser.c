@@ -52,6 +52,7 @@ rdsparser_init(rdsparser_t *rds)
     rdsparser_string_init(rds->ps, RDSPARSER_PS_LENGTH);
     rdsparser_string_init(rds->rt[0], RDSPARSER_RT_LENGTH);
     rdsparser_string_init(rds->rt[1], RDSPARSER_RT_LENGTH);
+    rdsparser_string_init(rds->ptyn, RDSPARSER_PTYN_LENGTH);
     rdsparser_clear(rds);
 }
 
@@ -68,6 +69,7 @@ rdsparser_clear(rdsparser_t *rds)
     rdsparser_string_clear(rds->ps);
     rdsparser_string_clear(rds->rt[0]);
     rdsparser_string_clear(rds->rt[1]);
+    rdsparser_string_clear(rds->ptyn);
     rds->last_rt_flag = -1;
 }
 
@@ -280,6 +282,12 @@ rdsparser_get_rt(const rdsparser_t   *rds,
     return rds->rt[!!flag];
 }
 
+const rdsparser_string_t*
+rdsparser_get_ptyn(const rdsparser_t *rds)
+{
+    return rds->ptyn;
+}
+
 void
 rdsparser_set_user_data(rdsparser_t *rds,
                         void        *user_data)
@@ -349,3 +357,11 @@ rdsparser_register_rt(rdsparser_t  *rds,
 {
     rds->callback_rt = callback_rt;
 }
+
+void
+rdsparser_register_ptyn(rdsparser_t  *rds,
+                        void        (*callback_ptyn)(rdsparser_t*, void*))
+{
+    rds->callback_ptyn = callback_ptyn;
+}
+

@@ -111,7 +111,9 @@ static const char *rds_data[] =
     "34DB054AA829445000",
     "34DB25417A20677200",
     "34DB054F76CD2A2000",
-    "34DB2542616D793A00"
+    "34DB2542616D793A00",
+    "34DBA5505241444900",
+    "34DBA5514F20372000"
 };
 
 static void
@@ -191,6 +193,19 @@ callback_rt(rdsparser_t         *rds,
 #endif
 }
 
+static void
+callback_ptyn(rdsparser_t *rds,
+              void        *user_data)
+{
+    const rdsparser_string_t *ptyn = rdsparser_get_ptyn(rds);
+    const rdsparser_string_char_t *ptyn_content = rdsparser_string_get_content(ptyn);
+#ifdef RDSPARSER_DISABLE_UNICODE
+    printf("PTYN: %s\n", ptyn_content);
+#else
+    printf("PTYN: %ls\n", ptyn_content);
+#endif
+}
+
 int
 main(int   argc,
      char* argv[])
@@ -223,6 +238,7 @@ main(int   argc,
     rdsparser_register_af(rds, callback_af);
     rdsparser_register_ps(rds, callback_ps);
     rdsparser_register_rt(rds, callback_rt);
+    rdsparser_register_ptyn(rds, callback_ptyn);
 
     for (size_t i = 0; i < sizeof(rds_data) / sizeof(char*); i++)
     {

@@ -21,6 +21,7 @@
 #include "group0.h"
 #include "group1.h"
 #include "group2.h"
+#include "group10.h"
 #include "string.h"
 
 static inline uint8_t
@@ -56,6 +57,10 @@ rdsparser_parser_process(rdsparser_t             *rds,
 
         case 2:
             rdsparser_group2_parse(rds, data, errors, flag);
+            break;
+
+        case 10:
+            rdsparser_group10_parse(rds, data, errors, flag);
             break;
     }
 }

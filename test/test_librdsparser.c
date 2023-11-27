@@ -135,6 +135,14 @@ callback_rt(rdsparser_t         *rds,
     function_called();
 }
 
+static void
+callback_ptyn(rdsparser_t *rds,
+              void        *user_data)
+{
+    (void)user_data;
+    function_called();
+}
+
 /* ------------------------------------------------ */
 
 static void
@@ -181,6 +189,15 @@ rdsparser_test_reset(void **state)
     content = rdsparser_string_get_content(string);
     errors = rdsparser_string_get_errors(string);
     for (uint8_t i = 0; i < RDSPARSER_RT_LENGTH; i++)
+    {
+        assert_int_equal(content[i], ' ');
+        assert_int_equal(errors[i], RDSPARSER_STRING_ERROR_UNCORRECTABLE);
+    }
+
+    string = rdsparser_get_ptyn(&ctx->rds);
+    content = rdsparser_string_get_content(string);
+    errors = rdsparser_string_get_errors(string);
+    for (uint8_t i = 0; i < RDSPARSER_PTYN_LENGTH; i++)
     {
         assert_int_equal(content[i], ' ');
         assert_int_equal(errors[i], RDSPARSER_STRING_ERROR_UNCORRECTABLE);
@@ -270,68 +287,63 @@ rdsparser_test_parse_string_long(void **state)
 }
 
 static void
-rdsparser_test_ps_info_correction(void **state)
+test_correction(void                  **state,
+                rdsparser_text_t        text,
+                rdsparser_block_type_t  block_type)
 {
     test_context_t *ctx = *state;
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_INFO), RDSPARSER_BLOCK_ERROR_NONE);
-    rdsparser_set_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_INFO, RDSPARSER_BLOCK_ERROR_SMALL);
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_INFO), RDSPARSER_BLOCK_ERROR_SMALL);
-    rdsparser_set_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_INFO, RDSPARSER_BLOCK_ERROR_LARGE);
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_INFO), RDSPARSER_BLOCK_ERROR_LARGE);
-    rdsparser_set_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_INFO, RDSPARSER_BLOCK_ERROR_NONE);
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_INFO), RDSPARSER_BLOCK_ERROR_NONE);
-    rdsparser_set_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_INFO, RDSPARSER_BLOCK_ERROR_UNCORRECTABLE);
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_INFO), RDSPARSER_BLOCK_ERROR_LARGE);
+
+    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, text, block_type), RDSPARSER_BLOCK_ERROR_NONE);
+    rdsparser_set_text_correction(&ctx->rds, text, block_type, RDSPARSER_BLOCK_ERROR_SMALL);
+    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, text, block_type), RDSPARSER_BLOCK_ERROR_SMALL);
+    rdsparser_set_text_correction(&ctx->rds, text, block_type, RDSPARSER_BLOCK_ERROR_LARGE);
+    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, text, block_type), RDSPARSER_BLOCK_ERROR_LARGE);
+    rdsparser_set_text_correction(&ctx->rds, text, block_type, RDSPARSER_BLOCK_ERROR_NONE);
+    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, text, block_type), RDSPARSER_BLOCK_ERROR_NONE);
+    rdsparser_set_text_correction(&ctx->rds, text, block_type, RDSPARSER_BLOCK_ERROR_UNCORRECTABLE);
+    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, text, block_type), RDSPARSER_BLOCK_ERROR_LARGE);
+}
+
+static void
+rdsparser_test_ps_info_correction(void **state)
+{
+    test_correction(state, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_INFO);
 }
 
 static void
 rdsparser_test_ps_data_correction(void **state)
 {
-    test_context_t *ctx = *state;
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_DATA), RDSPARSER_BLOCK_ERROR_NONE);
-    rdsparser_set_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_DATA, RDSPARSER_BLOCK_ERROR_SMALL);
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_DATA), RDSPARSER_BLOCK_ERROR_SMALL);
-    rdsparser_set_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_DATA, RDSPARSER_BLOCK_ERROR_LARGE);
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_DATA), RDSPARSER_BLOCK_ERROR_LARGE);
-    rdsparser_set_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_DATA, RDSPARSER_BLOCK_ERROR_NONE);
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_DATA), RDSPARSER_BLOCK_ERROR_NONE);
-    rdsparser_set_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_DATA, RDSPARSER_BLOCK_ERROR_UNCORRECTABLE);
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_DATA), RDSPARSER_BLOCK_ERROR_LARGE);
-}
 
+    test_correction(state, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_DATA);
+}
 
 static void
 rdsparser_test_rt_info_correction(void **state)
 {
-    test_context_t *ctx = *state;
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_INFO), RDSPARSER_BLOCK_ERROR_NONE);
-    rdsparser_set_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_INFO, RDSPARSER_BLOCK_ERROR_SMALL);
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_INFO), RDSPARSER_BLOCK_ERROR_SMALL);
-    rdsparser_set_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_INFO, RDSPARSER_BLOCK_ERROR_LARGE);
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_INFO), RDSPARSER_BLOCK_ERROR_LARGE);
-    rdsparser_set_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_INFO, RDSPARSER_BLOCK_ERROR_NONE);
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_INFO), RDSPARSER_BLOCK_ERROR_NONE);
-    rdsparser_set_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_INFO, RDSPARSER_BLOCK_ERROR_UNCORRECTABLE);
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_INFO), RDSPARSER_BLOCK_ERROR_LARGE);
+    test_correction(state, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_INFO);
 }
 
 static void
 rdsparser_test_rt_data_correction(void **state)
 {
-    test_context_t *ctx = *state;
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_DATA), RDSPARSER_BLOCK_ERROR_NONE);
-    rdsparser_set_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_DATA, RDSPARSER_BLOCK_ERROR_SMALL);
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_DATA), RDSPARSER_BLOCK_ERROR_SMALL);
-    rdsparser_set_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_DATA, RDSPARSER_BLOCK_ERROR_LARGE);
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_DATA), RDSPARSER_BLOCK_ERROR_LARGE);
-    rdsparser_set_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_DATA, RDSPARSER_BLOCK_ERROR_NONE);
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_DATA), RDSPARSER_BLOCK_ERROR_NONE);
-    rdsparser_set_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_DATA, RDSPARSER_BLOCK_ERROR_UNCORRECTABLE);
-    assert_int_equal(rdsparser_get_text_correction(&ctx->rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_DATA), RDSPARSER_BLOCK_ERROR_LARGE);
+    test_correction(state, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_DATA);
 }
 
 static void
-rdsparser_test_ps_progressive(void **state)
+rdsparser_test_ptyn_info_correction(void **state)
+{
+    test_correction(state, RDSPARSER_TEXT_PTYN, RDSPARSER_BLOCK_TYPE_INFO);
+}
+
+static void
+rdsparser_test_ptyn_data_correction(void **state)
+{
+    test_correction(state, RDSPARSER_TEXT_PTYN, RDSPARSER_BLOCK_TYPE_DATA);
+}
+
+static void
+test_progressive(void             **state,
+                 rdsparser_text_t   text)
 {
     test_context_t *ctx = *state;
     assert_int_equal(rdsparser_get_text_progressive(&ctx->rds, RDSPARSER_TEXT_PS), false);
@@ -342,14 +354,21 @@ rdsparser_test_ps_progressive(void **state)
 }
 
 static void
+rdsparser_test_ps_progressive(void **state)
+{
+    test_progressive(state, RDSPARSER_TEXT_PS);
+}
+
+static void
 rdsparser_test_rt_progressive(void **state)
 {
-    test_context_t *ctx = *state;
-    assert_int_equal(rdsparser_get_text_progressive(&ctx->rds, RDSPARSER_TEXT_RT), false);
-    rdsparser_set_text_progressive(&ctx->rds, RDSPARSER_TEXT_RT, true);
-    assert_int_equal(rdsparser_get_text_progressive(&ctx->rds, RDSPARSER_TEXT_RT), true);
-    rdsparser_set_text_progressive(&ctx->rds, RDSPARSER_TEXT_RT, false);
-    assert_int_equal(rdsparser_get_text_progressive(&ctx->rds, RDSPARSER_TEXT_RT), false);
+    test_progressive(state, RDSPARSER_TEXT_RT);
+}
+
+static void
+rdsparser_test_ptyn_progressive(void **state)
+{
+    test_progressive(state, RDSPARSER_TEXT_PTYN);
 }
 
 static void
@@ -435,6 +454,15 @@ rdsparser_test_register_rt(void **state)
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "34DB254F3420303000"), true);
 }
 
+static void
+rdsparser_test_register_ptyn(void **state)
+{
+    test_context_t *ctx = *state;
+    rdsparser_register_ptyn(&ctx->rds, callback_ptyn);
+    expect_function_call(callback_ptyn);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "34DBA5505241444900"), true);
+}
+
 const struct CMUnitTest tests[] =
 {
     cmocka_unit_test_setup_teardown(rdsparser_test_reset, test_setup, test_teardown),
@@ -448,8 +476,11 @@ const struct CMUnitTest tests[] =
     cmocka_unit_test_setup_teardown(rdsparser_test_ps_data_correction, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_rt_info_correction, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_rt_data_correction, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(rdsparser_test_ptyn_info_correction, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(rdsparser_test_ptyn_data_correction, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_ps_progressive, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_rt_progressive, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(rdsparser_test_ptyn_progressive, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_register_pi, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_register_tp, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_register_ta, test_setup, test_teardown),
@@ -458,7 +489,8 @@ const struct CMUnitTest tests[] =
     cmocka_unit_test_setup_teardown(rdsparser_test_register_ecc, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_register_af, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_register_ps, test_setup, test_teardown),
-    cmocka_unit_test_setup_teardown(rdsparser_test_register_rt, test_setup, test_teardown)
+    cmocka_unit_test_setup_teardown(rdsparser_test_register_rt, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(rdsparser_test_register_ptyn, test_setup, test_teardown)
 };
 
 int

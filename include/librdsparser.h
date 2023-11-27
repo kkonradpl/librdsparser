@@ -26,6 +26,7 @@ extern "C" {
 #define RDSPARSER_AF_BUFFER_SIZE 26
 #define RDSPARSER_PS_LENGTH 8
 #define RDSPARSER_RT_LENGTH 64
+#define RDSPARSER_PTYN_LENGTH 8
 
 typedef uint8_t rdsparser_block_t;
 enum rdsparser_block
@@ -59,6 +60,7 @@ enum rdsparser_text
 {
     RDSPARSER_TEXT_PS = 0,
     RDSPARSER_TEXT_RT = 1,
+    RDSPARSER_TEXT_PTYN = 2,
     RDSPARSER_TEXT_COUNT
 };
 
@@ -161,6 +163,7 @@ rdsparser_ecc_t rdsparser_get_ecc(const rdsparser_t *rds);
 const rdsparser_af_t* rdsparser_get_af(const rdsparser_t *rds);
 const rdsparser_string_t* rdsparser_get_ps(const rdsparser_t *rds);
 const rdsparser_string_t* rdsparser_get_rt(const rdsparser_t *rds, rdsparser_rt_flag_t flag);
+const rdsparser_string_t* rdsparser_get_ptyn(const rdsparser_t *rds);
 
 void rdsparser_set_user_data(rdsparser_t *rds, void *user_data);
 
@@ -173,6 +176,7 @@ void rdsparser_register_ecc(rdsparser_t *rds, void (*callback_ecc)(rdsparser_t*,
 void rdsparser_register_af(rdsparser_t *rds, void (*callback_af)(rdsparser_t*, uint32_t, void*));
 void rdsparser_register_ps(rdsparser_t *rds, void (*callback_ps)(rdsparser_t*, void*));
 void rdsparser_register_rt(rdsparser_t *rds, void (*callback_rt)(rdsparser_t*, rdsparser_rt_flag_t, void*));
+void rdsparser_register_ptyn(rdsparser_t *rds, void (*callback_ptyn)(rdsparser_t*, void*));
 
 uint8_t rdsparser_string_get_length(const rdsparser_string_t *string);
 bool rdsparser_string_get_available(const rdsparser_string_t *string);

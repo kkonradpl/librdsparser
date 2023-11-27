@@ -52,8 +52,7 @@ rdsparser_group0a_get_af2(const rdsparser_data_t data)
 static inline void
 rdsparser_group0a_parse(rdsparser_t             *rds,
                         const rdsparser_data_t   data,
-                        const rdsparser_error_t  errors,
-                        rdsparser_group_flag_t   flag)
+                        const rdsparser_error_t  errors)
 {
     if (errors[RDSPARSER_BLOCK_B] == 0 &&
         errors[RDSPARSER_BLOCK_C] == 0)
@@ -103,7 +102,7 @@ rdsparser_group0_parse(rdsparser_t             *rds,
 
     if (flag == RDSPARSER_GROUP_FLAG_A)
     {
-        rdsparser_group0a_parse(rds, data, errors, flag);
+        rdsparser_group0a_parse(rds, data, errors);
     }
 }
 

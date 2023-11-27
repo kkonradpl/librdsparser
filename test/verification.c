@@ -38,6 +38,7 @@ typedef struct {
     uint32_t af2;
     wchar_t ps[9];
     wchar_t rt[2][65];
+    wchar_t ptyn[9];
 } test_context_t;
 
 static int
@@ -158,6 +159,17 @@ callback_rt(rdsparser_t         *rds,
     const rdsparser_string_t *string = rdsparser_get_rt(rds, flag);
     const rdsparser_string_char_t *content = rdsparser_string_get_content(string);
     assert_rds_string_equal(content, ctx->rt[flag]);
+    function_called();
+}
+
+static void
+callback_ptyn(rdsparser_t *rds,
+              void        *user_data)
+{
+    test_context_t *ctx = (test_context_t*)user_data;
+    const rdsparser_string_t *string = rdsparser_get_ptyn(rds);
+    const rdsparser_string_char_t *content = rdsparser_string_get_content(string);
+    assert_rds_string_equal(content, ctx->ptyn);
     function_called();
 }
 
@@ -788,6 +800,30 @@ verification_rt_empty_with_error(void **state)
     assert_rds_string_equal(rdsparser_string_get_content(rdsparser_get_rt(&ctx->rds, RDSPARSER_RT_FLAG_A)), empty);
 }
 
+static void
+verification_ptyn(void **state)
+{
+    test_context_t *ctx = *state;
+    rdsparser_register_ptyn(&ctx->rds, callback_ptyn);
+
+    expect_function_call(callback_ptyn);
+    swprintf(ctx->ptyn, sizeof(ctx->ptyn), L"RADI    ");
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "34DBA5505241444900"), true);
+    /* Same value, no callback */
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "34DBA5505241444900"), true);
+
+    expect_function_call(callback_ptyn);
+    swprintf(ctx->ptyn, sizeof(ctx->ptyn), L"RADIO 7 ");
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "34DBA5514F20372000"), true);
+    /* Same value, no callback */
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "34DBA5514F20372000"), true);
+
+    assert_int_equal(rdsparser_string_get_available(rdsparser_get_ptyn(&ctx->rds)), true);
+
+    rdsparser_clear(&ctx->rds);
+    assert_rds_string_equal(rdsparser_string_get_content(rdsparser_get_ptyn(&ctx->rds)), L"        ");
+}
+
 const struct CMUnitTest tests[] =
 {
     cmocka_unit_test_setup_teardown(verification_pi, test_setup, test_teardown),
@@ -820,7 +856,8 @@ const struct CMUnitTest tests[] =
     cmocka_unit_test_setup_teardown(verification_rt_invalid_pos, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_rt_invalid_data, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_rt_empty, test_setup, test_teardown),
-    cmocka_unit_test_setup_teardown(verification_rt_empty_with_error, test_setup, test_teardown)
+    cmocka_unit_test_setup_teardown(verification_rt_empty_with_error, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(verification_ptyn, test_setup, test_teardown),
 };
 
 int

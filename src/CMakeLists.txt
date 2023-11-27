@@ -11,6 +11,8 @@ set(SOURCE_FILES
         group1.h
         group2.c
         group2.h
+        group10.c
+        group10.h
         rdsparser.c
         parser.c
         parser.h
