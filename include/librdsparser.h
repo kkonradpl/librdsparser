@@ -190,7 +190,7 @@ uint8_t rdsparser_ct_get_month(const rdsparser_ct_t *ct);
 uint8_t rdsparser_ct_get_day(const rdsparser_ct_t *ct);
 uint8_t rdsparser_ct_get_hour(const rdsparser_ct_t *ct);
 uint8_t rdsparser_ct_get_minute(const rdsparser_ct_t *ct);
-int8_t rdsparser_ct_get_offset(const rdsparser_ct_t *ct);
+int16_t rdsparser_ct_get_offset(const rdsparser_ct_t *ct);
 
 #ifdef __cplusplus
 }

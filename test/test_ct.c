@@ -109,7 +109,7 @@ af_test_ct_cet_offset(void **state)
     assert_int_equal(rdsparser_ct_get_day(&ctx->ct), 27);
     assert_int_equal(rdsparser_ct_get_hour(&ctx->ct), 12);
     assert_int_equal(rdsparser_ct_get_minute(&ctx->ct), 39);
-    assert_int_equal(rdsparser_ct_get_offset(&ctx->ct), 2);
+    assert_int_equal(rdsparser_ct_get_offset(&ctx->ct), 60);
 }
 
 static void
@@ -122,7 +122,7 @@ af_test_ct_positive_day_offset(void **state)
     assert_int_equal(rdsparser_ct_get_day(&ctx->ct), 28);
     assert_int_equal(rdsparser_ct_get_hour(&ctx->ct), 0);
     assert_int_equal(rdsparser_ct_get_minute(&ctx->ct), 30);
-    assert_int_equal(rdsparser_ct_get_offset(&ctx->ct), 2);
+    assert_int_equal(rdsparser_ct_get_offset(&ctx->ct), 60);
 }
 
 static void
@@ -135,7 +135,7 @@ af_test_ct_negative_day_offset(void **state)
     assert_int_equal(rdsparser_ct_get_day(&ctx->ct), 26);
     assert_int_equal(rdsparser_ct_get_hour(&ctx->ct), 23);
     assert_int_equal(rdsparser_ct_get_minute(&ctx->ct), 30);
-    assert_int_equal(rdsparser_ct_get_offset(&ctx->ct), -2);
+    assert_int_equal(rdsparser_ct_get_offset(&ctx->ct), -60);
 }
 
 static void
@@ -148,7 +148,7 @@ af_test_ct_positive_hour_offset(void **state)
     assert_int_equal(rdsparser_ct_get_day(&ctx->ct), 27);
     assert_int_equal(rdsparser_ct_get_hour(&ctx->ct), 21);
     assert_int_equal(rdsparser_ct_get_minute(&ctx->ct), 0);
-    assert_int_equal(rdsparser_ct_get_offset(&ctx->ct), 1);
+    assert_int_equal(rdsparser_ct_get_offset(&ctx->ct), 30);
 }
 
 static void
@@ -161,7 +161,7 @@ af_test_ct_negative_hour_offset(void **state)
     assert_int_equal(rdsparser_ct_get_day(&ctx->ct), 27);
     assert_int_equal(rdsparser_ct_get_hour(&ctx->ct), 19);
     assert_int_equal(rdsparser_ct_get_minute(&ctx->ct), 30);
-    assert_int_equal(rdsparser_ct_get_offset(&ctx->ct), -1);
+    assert_int_equal(rdsparser_ct_get_offset(&ctx->ct), -30);
 }
 
 static void
@@ -174,7 +174,7 @@ af_test_ct_positive_day_and_hour_offset(void **state)
     assert_int_equal(rdsparser_ct_get_day(&ctx->ct), 28);
     assert_int_equal(rdsparser_ct_get_hour(&ctx->ct), 0);
     assert_int_equal(rdsparser_ct_get_minute(&ctx->ct), 0);
-    assert_int_equal(rdsparser_ct_get_offset(&ctx->ct), 9);
+    assert_int_equal(rdsparser_ct_get_offset(&ctx->ct), 270);
 }
 
 static void
@@ -187,7 +187,7 @@ af_test_ct_negative_day_and_hour_offset(void **state)
     assert_int_equal(rdsparser_ct_get_day(&ctx->ct), 26);
     assert_int_equal(rdsparser_ct_get_hour(&ctx->ct), 23);
     assert_int_equal(rdsparser_ct_get_minute(&ctx->ct), 30);
-    assert_int_equal(rdsparser_ct_get_offset(&ctx->ct), -6);
+    assert_int_equal(rdsparser_ct_get_offset(&ctx->ct), -180);
 }
 
 const struct CMUnitTest tests[] =

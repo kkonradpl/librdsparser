@@ -213,7 +213,7 @@ callback_ct(rdsparser_t          *rds,
             const rdsparser_ct_t *ct,
             void                 *user_data)
 {
-    int8_t offset = rdsparser_ct_get_offset(ct);
+    int16_t offset = rdsparser_ct_get_offset(ct);
 
     printf("CT: %04d-%02d-%02d %02d:%02d (%c%02d:%02d)\n",
            rdsparser_ct_get_year(ct),
@@ -222,8 +222,8 @@ callback_ct(rdsparser_t          *rds,
            rdsparser_ct_get_hour(ct),
            rdsparser_ct_get_minute(ct),
            (offset >= 0) ? '+' : '-',
-           abs(offset / 2),
-           abs(offset % 2 * 30));
+           abs(offset / 60),
+           abs(offset % 60));
 }
 
 int

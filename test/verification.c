@@ -44,7 +44,7 @@ typedef struct {
     uint8_t ct_day;
     uint8_t ct_hour;
     uint8_t ct_minute;
-    int8_t ct_offset;
+    int16_t ct_offset;
 } test_context_t;
 
 static int
@@ -858,7 +858,7 @@ verification_ct(void **state)
     ctx->ct_day = 19;
     ctx->ct_hour = 1;
     ctx->ct_minute = 6;
-    ctx->ct_offset = 2;
+    ctx->ct_offset = 60;
 
     expect_function_call(callback_ct);
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "23534541D7500182"), true);

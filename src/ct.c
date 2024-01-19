@@ -103,8 +103,8 @@ rdsparser_ct_get_minute(const rdsparser_ct_t *ct)
     return ct->minute;
 }
 
-int8_t
+int16_t
 rdsparser_ct_get_offset(const rdsparser_ct_t *ct)
 {
-    return ct->offset;
+    return (int16_t)ct->offset * 30;
 }

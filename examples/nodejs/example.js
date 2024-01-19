@@ -118,8 +118,8 @@ const callbacks = {
         minute = String(rdsparser.ct_get_minute(ct)).padStart(2, '0'),
         offset = rdsparser.ct_get_offset(ct),
         tz_sign = (offset >= 0 ? '+' : '-'),
-        tz_hour = String(Math.abs(Math.floor(offset / 2))).padStart(2, '0'),
-        tz_minute = String(Math.abs(offset % 2 * 30)).padStart(2, '0'),
+        tz_hour = String(Math.abs(Math.floor(offset / 60))).padStart(2, '0'),
+        tz_minute = String(Math.abs(offset % 60)).padStart(2, '0'),
         console.log('CT: ' + year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ' (' + tz_sign + tz_hour + ':' + tz_minute + ')')
     ), 'callback_ct*')
 }
