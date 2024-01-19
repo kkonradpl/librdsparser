@@ -50,7 +50,8 @@ const rdsparser = {
     ct_get_day: lib.func('uint8_t rdsparser_ct_get_day(void *ct)'),
     ct_get_hour: lib.func('uint8_t rdsparser_ct_get_hour(void *ct)'),
     ct_get_minute: lib.func('uint8_t rdsparser_ct_get_minute(void *ct)'),
-    ct_get_offset: lib.func('int8_t rdsparser_ct_get_offset(void *ct)')
+    ct_get_offset: lib.func('int8_t rdsparser_ct_get_offset(void *ct)'),
+    pty_lookup: lib.func('const char* rdsparser_pty_lookup(int8_t pty, bool rbds, bool short_version)')
 }
 
 const decode_unicode = function(string) {
@@ -68,7 +69,8 @@ const callbacks = {
 
     pty: koffi.register(rds => (
         value = rdsparser.get_pty(rds),
-        console.log('PTY: ' + value)
+        display = rdsparser.pty_lookup(value, false, false),
+        console.log('PTY: ' + display + ' (' + value + ')')
     ), 'callback_pty*'),
 
     tp: koffi.register(rds => (

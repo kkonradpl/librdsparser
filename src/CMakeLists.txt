@@ -20,6 +20,7 @@ set(SOURCE_FILES
         rdsparser.c
         parser.c
         parser.h
+        pty.c
         string.c
         string.h
         utils.c

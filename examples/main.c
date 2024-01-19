@@ -129,7 +129,8 @@ static void
 callback_pty(rdsparser_t *rds,
              void        *user_data)
 {
-    printf("PTY: %d\n", rdsparser_get_pty(rds));
+    uint8_t pty = rdsparser_get_pty(rds);
+    printf("PTY: %s (%d)\n", rdsparser_pty_lookup(pty, false, false), pty);
 }
 
 static void
