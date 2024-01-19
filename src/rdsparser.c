@@ -1,7 +1,7 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
  *  librdsparser – Radio Data System parser library
- *  Copyright (C) 2023  Konrad Kosmatka
+ *  Copyright (C) 2023-2024  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -365,3 +365,9 @@ rdsparser_register_ptyn(rdsparser_t  *rds,
     rds->callback_ptyn = callback_ptyn;
 }
 
+void
+rdsparser_register_ct(rdsparser_t  *rds,
+                      void        (*callback_ct)(rdsparser_t*, const rdsparser_ct_t*, void*))
+{
+    rds->callback_ct = callback_ct;
+}

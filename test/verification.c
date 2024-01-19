@@ -1,7 +1,7 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
  *  librdsparser – Radio Data System parser library
- *  Copyright (C) 2023  Konrad Kosmatka
+ *  Copyright (C) 2023-2024  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -39,6 +39,12 @@ typedef struct {
     wchar_t ps[9];
     wchar_t rt[2][65];
     wchar_t ptyn[9];
+    uint16_t ct_year;
+    uint8_t ct_month;
+    uint8_t ct_day;
+    uint8_t ct_hour;
+    uint8_t ct_minute;
+    int8_t ct_offset;
 } test_context_t;
 
 static int
@@ -170,6 +176,23 @@ callback_ptyn(rdsparser_t *rds,
     const rdsparser_string_t *string = rdsparser_get_ptyn(rds);
     const rdsparser_string_char_t *content = rdsparser_string_get_content(string);
     assert_rds_string_equal(content, ctx->ptyn);
+    function_called();
+}
+
+static void
+callback_ct(rdsparser_t          *rds,
+            const rdsparser_ct_t *ct,
+            void                 *user_data)
+{
+    test_context_t *ctx = (test_context_t*)user_data;
+
+    assert_int_equal(rdsparser_ct_get_year(ct), ctx->ct_year);
+    assert_int_equal(rdsparser_ct_get_month(ct), ctx->ct_month);
+    assert_int_equal(rdsparser_ct_get_day(ct), ctx->ct_day);
+    assert_int_equal(rdsparser_ct_get_hour(ct), ctx->ct_hour);
+    assert_int_equal(rdsparser_ct_get_minute(ct), ctx->ct_minute);
+    assert_int_equal(rdsparser_ct_get_offset(ct), ctx->ct_offset);
+
     function_called();
 }
 
@@ -824,6 +847,23 @@ verification_ptyn(void **state)
     assert_rds_string_equal(rdsparser_string_get_content(rdsparser_get_ptyn(&ctx->rds)), L"        ");
 }
 
+static void
+verification_ct(void **state)
+{
+    test_context_t *ctx = *state;
+    rdsparser_register_ct(&ctx->rds, callback_ct);
+
+    ctx->ct_year = 2024;
+    ctx->ct_month = 1;
+    ctx->ct_day = 19;
+    ctx->ct_hour = 1;
+    ctx->ct_minute = 6;
+    ctx->ct_offset = 2;
+
+    expect_function_call(callback_ct);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "23534541D7500182"), true);
+}
+
 const struct CMUnitTest tests[] =
 {
     cmocka_unit_test_setup_teardown(verification_pi, test_setup, test_teardown),
@@ -858,6 +898,7 @@ const struct CMUnitTest tests[] =
     cmocka_unit_test_setup_teardown(verification_rt_empty, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_rt_empty_with_error, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ptyn, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(verification_ct, test_setup, test_teardown)
 };
 
 int

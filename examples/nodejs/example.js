@@ -16,6 +16,7 @@ koffi.proto('void callback_af(void *rds, uint32_t af, void *user_data)');
 koffi.proto('void callback_ps(void *rds, void *user_data)');
 koffi.proto('void callback_rt(void *rds, int flag, void *user_data)');
 koffi.proto('void callback_ptyn(void *rds, void *user_data)');
+koffi.proto('void callback_ct(void *rds, void *ct, void *user_data)');
 
 const rdsparser = {
     new: lib.func('void* rdsparser_new()'),
@@ -41,8 +42,15 @@ const rdsparser = {
     register_ps: lib.func('void rdsparser_register_ps(void *rds, callback_ps *cb)'),
     register_rt: lib.func('void rdsparser_register_rt(void *rds, callback_rt *cb)'),
     register_ptyn: lib.func('void rdsparser_register_ptyn(void *rds, callback_ptyn *cb)'),
+    register_ct: lib.func('void rdsparser_register_ct(void *rds, callback_ct *cb)'),
     string_get_content: lib.func(unicode_type + '* rdsparser_string_get_content(void *string)'),
-    string_get_length: lib.func('uint8_t rdsparser_string_get_length(void *string)')
+    string_get_length: lib.func('uint8_t rdsparser_string_get_length(void *string)'),
+    ct_get_year: lib.func('uint16_t rdsparser_ct_get_year(void *ct)'),
+    ct_get_month: lib.func('uint8_t rdsparser_ct_get_month(void *ct)'),
+    ct_get_day: lib.func('uint8_t rdsparser_ct_get_day(void *ct)'),
+    ct_get_hour: lib.func('uint8_t rdsparser_ct_get_hour(void *ct)'),
+    ct_get_minute: lib.func('uint8_t rdsparser_ct_get_minute(void *ct)'),
+    ct_get_offset: lib.func('int8_t rdsparser_ct_get_offset(void *ct)')
 }
 
 const decode_unicode = function(string) {
@@ -100,7 +108,20 @@ const callbacks = {
     ptyn: koffi.register((rds, flag) => (
         value = decode_unicode(rdsparser.get_ptyn(rds)),
         console.log('PTYN: ' + value)
-    ), 'callback_ptyn*')
+    ), 'callback_ptyn*'),
+
+    ct: koffi.register((rds, ct) => (
+        year = rdsparser.ct_get_year(ct),
+        month = String(rdsparser.ct_get_month(ct)).padStart(2, '0'),
+        day = String(rdsparser.ct_get_day(ct)).padStart(2, '0'),
+        hour = String(rdsparser.ct_get_hour(ct)).padStart(2, '0'),
+        minute = String(rdsparser.ct_get_minute(ct)).padStart(2, '0'),
+        offset = rdsparser.ct_get_offset(ct),
+        tz_sign = (offset >= 0 ? '+' : '-'),
+        tz_hour = String(Math.abs(Math.floor(offset / 2))).padStart(2, '0'),
+        tz_minute = String(Math.abs(offset % 2 * 30)).padStart(2, '0'),
+        console.log('CT: ' + year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ' (' + tz_sign + tz_hour + ':' + tz_minute + ')')
+    ), 'callback_ct*')
 }
 
 let rds = rdsparser.new()
@@ -114,6 +135,7 @@ rdsparser.register_af(rds, callbacks.af)
 rdsparser.register_ps(rds, callbacks.ps)
 rdsparser.register_rt(rds, callbacks.rt)
 rdsparser.register_ptyn(rds, callbacks.ptyn)
+rdsparser.register_ct(rds, callbacks.ct)
 
 let data = [
     '34DB054A76CD445000',
@@ -209,7 +231,8 @@ let data = [
     '34DB054F76CD2A2000',
     '34DB2542616D793A00',
     '34DBA5505241444900',
-    '34DBA5514F20372000'
+    '34DBA5514F20372000',
+    '34DB4541D750018200'
 ]
 
 for (let group of data) {

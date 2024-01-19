@@ -1,7 +1,7 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
  *  librdsparser – Radio Data System parser library
- *  Copyright (C) 2023  Konrad Kosmatka
+ *  Copyright (C) 2023-2024  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -126,6 +126,7 @@ typedef int16_t rdsparser_ecc_t;
 #define RDSPARSER_ECC_UNKNOWN -1
 
 typedef struct rdsparser_af rdsparser_af_t;
+typedef struct rdsparser_ct rdsparser_ct_t;
 
 #ifndef RDSPARSER_DISABLE_UNICODE
 #include <wchar.h>
@@ -177,11 +178,19 @@ void rdsparser_register_af(rdsparser_t *rds, void (*callback_af)(rdsparser_t*, u
 void rdsparser_register_ps(rdsparser_t *rds, void (*callback_ps)(rdsparser_t*, void*));
 void rdsparser_register_rt(rdsparser_t *rds, void (*callback_rt)(rdsparser_t*, rdsparser_rt_flag_t, void*));
 void rdsparser_register_ptyn(rdsparser_t *rds, void (*callback_ptyn)(rdsparser_t*, void*));
+void rdsparser_register_ct(rdsparser_t *rds, void (*callback_ct)(rdsparser_t*, const rdsparser_ct_t*, void*));
 
 uint8_t rdsparser_string_get_length(const rdsparser_string_t *string);
 bool rdsparser_string_get_available(const rdsparser_string_t *string);
 const rdsparser_string_char_t* rdsparser_string_get_content(const rdsparser_string_t *string);
 const rdsparser_string_error_t* rdsparser_string_get_errors(const rdsparser_string_t *string);
+
+uint16_t rdsparser_ct_get_year(const rdsparser_ct_t *ct);
+uint8_t rdsparser_ct_get_month(const rdsparser_ct_t *ct);
+uint8_t rdsparser_ct_get_day(const rdsparser_ct_t *ct);
+uint8_t rdsparser_ct_get_hour(const rdsparser_ct_t *ct);
+uint8_t rdsparser_ct_get_minute(const rdsparser_ct_t *ct);
+int8_t rdsparser_ct_get_offset(const rdsparser_ct_t *ct);
 
 #ifdef __cplusplus
 }

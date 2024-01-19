@@ -1,7 +1,7 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
  *  librdsparser – Radio Data System parser library
- *  Copyright (C) 2023  Konrad Kosmatka
+ *  Copyright (C) 2023-2024  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -138,6 +138,15 @@ callback_rt(rdsparser_t         *rds,
 static void
 callback_ptyn(rdsparser_t *rds,
               void        *user_data)
+{
+    (void)user_data;
+    function_called();
+}
+
+static void
+callback_ct(rdsparser_t          *rds,
+            const rdsparser_ct_t *ct,
+            void                 *user_data)
 {
     (void)user_data;
     function_called();
@@ -463,6 +472,15 @@ rdsparser_test_register_ptyn(void **state)
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "34DBA5505241444900"), true);
 }
 
+static void
+rdsparser_test_register_ct(void **state)
+{
+    test_context_t *ctx = *state;
+    rdsparser_register_ct(&ctx->rds, callback_ct);
+    expect_function_call(callback_ct);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "3F444541D7500580"), true);
+}
+
 const struct CMUnitTest tests[] =
 {
     cmocka_unit_test_setup_teardown(rdsparser_test_reset, test_setup, test_teardown),
@@ -490,7 +508,8 @@ const struct CMUnitTest tests[] =
     cmocka_unit_test_setup_teardown(rdsparser_test_register_af, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_register_ps, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_register_rt, test_setup, test_teardown),
-    cmocka_unit_test_setup_teardown(rdsparser_test_register_ptyn, test_setup, test_teardown)
+    cmocka_unit_test_setup_teardown(rdsparser_test_register_ptyn, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(rdsparser_test_register_ct, test_setup, test_teardown)
 };
 
 int

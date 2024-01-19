@@ -1,7 +1,7 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
  *  librdsparser – Radio Data System parser library
- *  Copyright (C) 2023  Konrad Kosmatka
+ *  Copyright (C) 2023-2024  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,7 @@
 #include "group0.h"
 #include "group1.h"
 #include "group2.h"
+#include "group4.h"
 #include "group10.h"
 #include "string.h"
 
@@ -57,6 +58,10 @@ rdsparser_parser_process(rdsparser_t             *rds,
 
         case 2:
             rdsparser_group2_parse(rds, data, errors, flag);
+            break;
+
+        case 4:
+            rdsparser_group4_parse(rds, data, errors, flag);
             break;
 
         case 10:

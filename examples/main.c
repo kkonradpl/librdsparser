@@ -1,7 +1,7 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
  *  librdsparser – Radio Data System parser library
- *  Copyright (C) 2023  Konrad Kosmatka
+ *  Copyright (C) 2023-2024  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <locale.h>
+#include <stdlib.h>
 #include <librdsparser.h>
 
 static const char *rds_data[] =
@@ -113,7 +114,8 @@ static const char *rds_data[] =
     "34DB054F76CD2A2000",
     "34DB2542616D793A00",
     "34DBA5505241444900",
-    "34DBA5514F20372000"
+    "34DBA5514F20372000",
+    "34DB4541D750018200"
 };
 
 static void
@@ -206,6 +208,24 @@ callback_ptyn(rdsparser_t *rds,
 #endif
 }
 
+static void
+callback_ct(rdsparser_t          *rds,
+            const rdsparser_ct_t *ct,
+            void                 *user_data)
+{
+    int8_t offset = rdsparser_ct_get_offset(ct);
+
+    printf("CT: %04d-%02d-%02d %02d:%02d (%c%02d:%02d)\n",
+           rdsparser_ct_get_year(ct),
+           rdsparser_ct_get_month(ct),
+           rdsparser_ct_get_day(ct),
+           rdsparser_ct_get_hour(ct),
+           rdsparser_ct_get_minute(ct),
+           (offset >= 0) ? '+' : '-',
+           abs(offset / 2),
+           abs(offset % 2 * 30));
+}
+
 int
 main(int   argc,
      char* argv[])
@@ -239,6 +259,7 @@ main(int   argc,
     rdsparser_register_ps(rds, callback_ps);
     rdsparser_register_rt(rds, callback_rt);
     rdsparser_register_ptyn(rds, callback_ptyn);
+    rdsparser_register_ct(rds, callback_ct);
 
     for (size_t i = 0; i < sizeof(rds_data) / sizeof(char*); i++)
     {

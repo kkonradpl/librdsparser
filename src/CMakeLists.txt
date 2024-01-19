@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.6)
 set(SOURCE_FILES
         af.c
         af.h
+        ct.c
+        ct.h
         group.c
         group.h
         group0.c
@@ -11,6 +13,8 @@ set(SOURCE_FILES
         group1.h
         group2.c
         group2.h
+        group4.c
+        group4.h
         group10.c
         group10.h
         rdsparser.c
