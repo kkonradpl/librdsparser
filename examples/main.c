@@ -115,7 +115,8 @@ static const char *rds_data[] =
     "34DB2542616D793A00",
     "34DBA5505241444900",
     "34DBA5514F20372000",
-    "34DB4541D750018200"
+    "34DB4541D750018200",
+    "34DB154000E2000000"
 };
 
 static void
@@ -158,7 +159,17 @@ static void
 callback_ecc(rdsparser_t *rds,
              void        *user_data)
 {
-    printf("ECC: %d\n", rdsparser_get_ecc(rds));
+    printf("ECC: 0x%02X\n", rdsparser_get_ecc(rds));
+}
+
+static void
+callback_country(rdsparser_t *rds,
+                 void        *user_data)
+{
+    rdsparser_country_t country = rdsparser_get_country(rds);
+    printf("Country: %s (%s)\n",
+           rdsparser_country_lookup_name(country),
+           rdsparser_country_lookup_iso(country));
 }
 
 static void
@@ -256,6 +267,7 @@ main(int   argc,
     rdsparser_register_ta(rds, callback_ta);
     rdsparser_register_ms(rds, callback_ms);
     rdsparser_register_ecc(rds, callback_ecc);
+    rdsparser_register_country(rds, callback_country);
     rdsparser_register_af(rds, callback_af);
     rdsparser_register_ps(rds, callback_ps);
     rdsparser_register_rt(rds, callback_rt);

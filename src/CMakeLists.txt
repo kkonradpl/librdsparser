@@ -3,8 +3,11 @@ cmake_minimum_required(VERSION 3.6)
 set(SOURCE_FILES
         af.c
         af.h
+        country.c
         ct.c
         ct.h
+        ecc.c
+        ecc.h
         group.c
         group.h
         group0.c

@@ -136,6 +136,79 @@ typedef uint8_t rdsparser_string_char_t;
 #endif
 typedef rdsparser_string_char_t rdsparser_string_t;
 
+typedef enum rdsparser_country
+{
+    RDSPARSER_COUNTRY_UNKNOWN = -1,
+    RDSPARSER_COUNTRY_GERMANY = 0,
+    RDSPARSER_COUNTRY_ALGERIA,
+    RDSPARSER_COUNTRY_ANDORRA,
+    RDSPARSER_COUNTRY_ISRAEL,
+    RDSPARSER_COUNTRY_ITALY,
+    RDSPARSER_COUNTRY_BELGIUM,
+    RDSPARSER_COUNTRY_RUSSIA,
+    RDSPARSER_COUNTRY_PALESTINE,
+    RDSPARSER_COUNTRY_ALBANIA,
+    RDSPARSER_COUNTRY_AUSTRIA,
+    RDSPARSER_COUNTRY_HUNGARY,
+    RDSPARSER_COUNTRY_MALTA,
+    RDSPARSER_COUNTRY_EGYPT,
+    RDSPARSER_COUNTRY_GREECE,
+    RDSPARSER_COUNTRY_CYPRUS,
+    RDSPARSER_COUNTRY_SAN_MARINO,
+    RDSPARSER_COUNTRY_SWITZERLAND,
+    RDSPARSER_COUNTRY_JORDAN,
+    RDSPARSER_COUNTRY_FINLAND,
+    RDSPARSER_COUNTRY_LUXEMBURG,
+    RDSPARSER_COUNTRY_BULGARIA,
+    RDSPARSER_COUNTRY_DENMARK,
+    RDSPARSER_COUNTRY_GIBRALTAR,
+    RDSPARSER_COUNTRY_IRAQ,
+    RDSPARSER_COUNTRY_UNITED_KINGDOM,
+    RDSPARSER_COUNTRY_LIBYA,
+    RDSPARSER_COUNTRY_ROMANIA,
+    RDSPARSER_COUNTRY_FRANCE,
+    RDSPARSER_COUNTRY_MOROCCO,
+    RDSPARSER_COUNTRY_CZECHIA,
+    RDSPARSER_COUNTRY_POLAND,
+    RDSPARSER_COUNTRY_VATICAN,
+    RDSPARSER_COUNTRY_SLOVAKIA,
+    RDSPARSER_COUNTRY_SYRIA,
+    RDSPARSER_COUNTRY_TUNISIA,
+    RDSPARSER_COUNTRY_LICHTENSTEIN,
+    RDSPARSER_COUNTRY_ICELAND,
+    RDSPARSER_COUNTRY_MONACO,
+    RDSPARSER_COUNTRY_LITHUANIA,
+    RDSPARSER_COUNTRY_SERBIA,
+    RDSPARSER_COUNTRY_SPAIN,
+    RDSPARSER_COUNTRY_NORWAY,
+    RDSPARSER_COUNTRY_MONTENEGRO,
+    RDSPARSER_COUNTRY_IRELAND,
+    RDSPARSER_COUNTRY_TURKEY,
+    RDSPARSER_COUNTRY_TAJIKISTAN,
+    RDSPARSER_COUNTRY_NETHERLANDS,
+    RDSPARSER_COUNTRY_LATVIA,
+    RDSPARSER_COUNTRY_LEBANON,
+    RDSPARSER_COUNTRY_AZERBAIJAN,
+    RDSPARSER_COUNTRY_CROATIA,
+    RDSPARSER_COUNTRY_KAZAKHSTAN,
+    RDSPARSER_COUNTRY_SWEDEN,
+    RDSPARSER_COUNTRY_BELARUS,
+    RDSPARSER_COUNTRY_MOLDOVA,
+    RDSPARSER_COUNTRY_ESTONIA,
+    RDSPARSER_COUNTRY_MACEDONIA,
+    RDSPARSER_COUNTRY_UKRAINE,
+    RDSPARSER_COUNTRY_KOSOVO,
+    RDSPARSER_COUNTRY_PORTUGAL,
+    RDSPARSER_COUNTRY_SLOVENIA,
+    RDSPARSER_COUNTRY_ARMENIA,
+    RDSPARSER_COUNTRY_UZBEKISTAN,
+    RDSPARSER_COUNTRY_GEORGIA,
+    RDSPARSER_COUNTRY_TURKMENISTAN,
+    RDSPARSER_COUNTRY_BOSNIA,
+    RDSPARSER_COUNTRY_KYRGYZSTAN,
+    RDSPARSER_COUNTRY_COUNT
+} rdsparser_country_t;
+
 #ifndef RDSPARSER_DISABLE_HEAP
 rdsparser_t* rdsparser_new(void);
 void rdsparser_free(rdsparser_t *rds);
@@ -161,6 +234,7 @@ rdsparser_tp_t rdsparser_get_tp(const rdsparser_t *rds);
 rdsparser_ta_t rdsparser_get_ta(const rdsparser_t *rds);
 rdsparser_ms_t rdsparser_get_ms(const rdsparser_t *rds);
 rdsparser_ecc_t rdsparser_get_ecc(const rdsparser_t *rds);
+rdsparser_country_t rdsparser_get_country(const rdsparser_t *rds);
 const rdsparser_af_t* rdsparser_get_af(const rdsparser_t *rds);
 const rdsparser_string_t* rdsparser_get_ps(const rdsparser_t *rds);
 const rdsparser_string_t* rdsparser_get_rt(const rdsparser_t *rds, rdsparser_rt_flag_t flag);
@@ -174,6 +248,7 @@ void rdsparser_register_tp(rdsparser_t *rds, void (*callback_tp)(rdsparser_t*, v
 void rdsparser_register_ta(rdsparser_t *rds, void (*callback_ta)(rdsparser_t*, void*));
 void rdsparser_register_ms(rdsparser_t *rds, void (*callback_ms)(rdsparser_t*, void*));
 void rdsparser_register_ecc(rdsparser_t *rds, void (*callback_ecc)(rdsparser_t*, void*));
+void rdsparser_register_country(rdsparser_t *rds, void (*callback_country)(rdsparser_t*, void*));
 void rdsparser_register_af(rdsparser_t *rds, void (*callback_af)(rdsparser_t*, uint32_t, void*));
 void rdsparser_register_ps(rdsparser_t *rds, void (*callback_ps)(rdsparser_t*, void*));
 void rdsparser_register_rt(rdsparser_t *rds, void (*callback_rt)(rdsparser_t*, rdsparser_rt_flag_t, void*));
@@ -194,6 +269,8 @@ int16_t rdsparser_ct_get_offset(const rdsparser_ct_t *ct);
 
 const char* rdsparser_pty_lookup_short(rdsparser_pty_t pty, bool rbds);
 const char* rdsparser_pty_lookup_long(rdsparser_pty_t pty, bool rbds);
+const char* rdsparser_country_lookup_iso(rdsparser_country_t country);
+const char* rdsparser_country_lookup_name(rdsparser_country_t country);
 
 #ifdef __cplusplus
 }

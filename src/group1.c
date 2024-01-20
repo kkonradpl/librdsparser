@@ -1,7 +1,7 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
  *  librdsparser – Radio Data System parser library
- *  Copyright (C) 2023  Konrad Kosmatka
+ *  Copyright (C) 2023-2024  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,7 @@
 
 #include <librdsparser_private.h>
 #include "rdsparser.h"
+#include "ecc.h"
 
 static inline uint8_t
 rdsparser_group1a_get_variant(const rdsparser_data_t data)
@@ -39,7 +40,9 @@ rdsparser_group1a_parse(rdsparser_t             *rds,
     {
         if (rdsparser_group1a_get_variant(data) == 0)
         {
-            rdsparser_set_ecc(rds, rdsparser_group1a0_get_ecc(data));
+            uint8_t ecc = rdsparser_group1a0_get_ecc(data);
+            rdsparser_set_ecc(rds, ecc);
+            rdsparser_set_country(rds, rdsparser_ecc_lookup(rdsparser_get_pi(rds), ecc));
         }
     }
 }

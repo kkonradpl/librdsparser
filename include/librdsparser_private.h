@@ -43,6 +43,7 @@ struct librdsparser
     rdsparser_ta_t ta;
     rdsparser_ms_t ms;
     rdsparser_ecc_t ecc;
+    rdsparser_country_t country;
     rdsparser_af_t af;
     rdsparser_string_t ps[RDSPARSER_STRING_SIZE(RDSPARSER_PS_LENGTH)];
     rdsparser_string_t rt[RDSPARSER_RT_FLAG_COUNT][RDSPARSER_STRING_SIZE(RDSPARSER_RT_LENGTH)];
@@ -60,6 +61,7 @@ struct librdsparser
     void (*callback_ta)(rdsparser_t*, void*);
     void (*callback_ms)(rdsparser_t*, void*);
     void (*callback_ecc)(rdsparser_t*, void*);
+    void (*callback_country)(rdsparser_t*, void*);
     void (*callback_af)(rdsparser_t*, uint32_t, void*);
     void (*callback_ps)(rdsparser_t*, void*);
     void (*callback_rt)(rdsparser_t*, rdsparser_rt_flag_t, void*);

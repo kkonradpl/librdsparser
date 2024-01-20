@@ -34,6 +34,7 @@ typedef struct {
     rdsparser_ta_t ta;
     rdsparser_ms_t ms;
     rdsparser_ecc_t ecc;
+    rdsparser_country_t country;
     uint32_t af1;
     uint32_t af2;
     wchar_t ps[9];
@@ -135,6 +136,15 @@ callback_ecc(rdsparser_t *rds,
 }
 
 static void
+callback_country(rdsparser_t *rds,
+                 void        *user_data)
+{
+    test_context_t *ctx = (test_context_t*)user_data;
+    assert_int_equal(rdsparser_get_country(rds), ctx->country);
+    function_called();
+}
+
+static void
 callback_af(rdsparser_t *rds,
             uint32_t     new_af,
             void        *user_data)
@@ -203,7 +213,7 @@ verification_pi(void **state)
 {
     test_context_t *ctx = *state;
     rdsparser_register_pi(&ctx->rds, callback_pi);
-    assert_int_equal(rdsparser_get_pi(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_pi(&ctx->rds), RDSPARSER_PI_UNKNOWN);
 
     expect_function_call(callback_pi);
     ctx->pi = 0x1234;
@@ -212,7 +222,7 @@ verification_pi(void **state)
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234567890123458"), true);
 
     rdsparser_clear(&ctx->rds);
-    assert_int_equal(rdsparser_get_pi(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_pi(&ctx->rds), RDSPARSER_PI_UNKNOWN);
 }
 
 static void
@@ -222,7 +232,7 @@ verification_pi_invalid(void **state)
     rdsparser_register_pi(&ctx->rds, callback_pi);
 
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "123456789012345840"), true);
-    assert_int_equal(rdsparser_get_pi(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_pi(&ctx->rds), RDSPARSER_PI_UNKNOWN);
 }
 
 static void
@@ -230,7 +240,7 @@ verification_pty(void **state)
 {
     test_context_t *ctx = *state;
     rdsparser_register_pty(&ctx->rds, callback_pty);
-    assert_int_equal(rdsparser_get_pty(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_pty(&ctx->rds), RDSPARSER_PTY_UNKNOWN);
 
     expect_function_call(callback_pty);
     ctx->pty = 19;
@@ -239,7 +249,7 @@ verification_pty(void **state)
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234567890123458"), true);
 
     rdsparser_clear(&ctx->rds);
-    assert_int_equal(rdsparser_get_pty(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_pty(&ctx->rds), RDSPARSER_PTY_UNKNOWN);
 }
 
 static void
@@ -249,7 +259,7 @@ verification_pty_invalid(void **state)
     rdsparser_register_pty(&ctx->rds, callback_pty);
 
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "123400000000000010"), true);
-    assert_int_equal(rdsparser_get_pty(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_pty(&ctx->rds), RDSPARSER_PTY_UNKNOWN);
 }
 
 static void
@@ -257,7 +267,7 @@ verification_tp_true(void **state)
 {
     test_context_t *ctx = *state;
     rdsparser_register_tp(&ctx->rds, callback_tp);
-    assert_int_equal(rdsparser_get_tp(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_tp(&ctx->rds), RDSPARSER_TP_UNKNOWN);
 
     expect_function_call(callback_tp);
     ctx->tp = 1;
@@ -266,7 +276,7 @@ verification_tp_true(void **state)
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234567890123458"), true);
 
     rdsparser_clear(&ctx->rds);
-    assert_int_equal(rdsparser_get_tp(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_tp(&ctx->rds), RDSPARSER_TP_UNKNOWN);
 }
 
 static void
@@ -274,7 +284,7 @@ verification_tp_false(void **state)
 {
     test_context_t *ctx = *state;
     rdsparser_register_tp(&ctx->rds, callback_tp);
-    assert_int_equal(rdsparser_get_tp(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_tp(&ctx->rds), RDSPARSER_TP_UNKNOWN);
 
     expect_function_call(callback_tp);
     ctx->tp = 0;
@@ -283,7 +293,7 @@ verification_tp_false(void **state)
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234000000000000"), true);
 
     rdsparser_clear(&ctx->rds);
-    assert_int_equal(rdsparser_get_tp(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_tp(&ctx->rds), RDSPARSER_TP_UNKNOWN);
 }
 
 static void
@@ -293,7 +303,7 @@ verification_tp_invalid(void **state)
     rdsparser_register_tp(&ctx->rds, callback_tp);
 
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "123400000000000010"), true);
-    assert_int_equal(rdsparser_get_tp(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_tp(&ctx->rds), RDSPARSER_TP_UNKNOWN);
 }
 
 static void
@@ -301,7 +311,7 @@ verification_ta_true(void **state)
 {
     test_context_t *ctx = *state;
     rdsparser_register_ta(&ctx->rds, callback_ta);
-    assert_int_equal(rdsparser_get_ta(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_ta(&ctx->rds), RDSPARSER_TA_UNKNOWN);
 
     expect_function_call(callback_ta);
     ctx->ta = 1;
@@ -310,7 +320,7 @@ verification_ta_true(void **state)
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "12340FFFFFFFFFFF"), true);
 
     rdsparser_clear(&ctx->rds);
-    assert_int_equal(rdsparser_get_ta(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_ta(&ctx->rds), RDSPARSER_TA_UNKNOWN);
 }
 
 static void
@@ -318,7 +328,7 @@ verification_ta_false(void **state)
 {
     test_context_t *ctx = *state;
     rdsparser_register_ta(&ctx->rds, callback_ta);
-    assert_int_equal(rdsparser_get_ta(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_ta(&ctx->rds), RDSPARSER_TA_UNKNOWN);
 
     expect_function_call(callback_ta);
     ctx->ta = 0;
@@ -327,7 +337,7 @@ verification_ta_false(void **state)
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234000090123458"), true);
 
     rdsparser_clear(&ctx->rds);
-    assert_int_equal(rdsparser_get_ta(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_ta(&ctx->rds), RDSPARSER_TA_UNKNOWN);
 }
 
 static void
@@ -337,7 +347,7 @@ verification_ta_invalid(void **state)
     rdsparser_register_ta(&ctx->rds, callback_ta);
 
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "123400000000000010"), true);
-    assert_int_equal(rdsparser_get_ta(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_ta(&ctx->rds), RDSPARSER_TA_UNKNOWN);
 }
 
 static void
@@ -345,7 +355,7 @@ verification_ms_true(void **state)
 {
     test_context_t *ctx = *state;
     rdsparser_register_ms(&ctx->rds, callback_ms);
-    assert_int_equal(rdsparser_get_ms(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_ms(&ctx->rds), RDSPARSER_MS_UNKNOWN);
 
     expect_function_call(callback_ms);
     ctx->ms = 1;
@@ -354,7 +364,7 @@ verification_ms_true(void **state)
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "12340FFFFFFFFFFF"), true);
 
     rdsparser_clear(&ctx->rds);
-    assert_int_equal(rdsparser_get_ms(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_ms(&ctx->rds), RDSPARSER_MS_UNKNOWN);
 }
 
 static void
@@ -362,7 +372,7 @@ verification_ms_false(void **state)
 {
     test_context_t *ctx = *state;
     rdsparser_register_ms(&ctx->rds, callback_ms);
-    assert_int_equal(rdsparser_get_ms(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_ms(&ctx->rds), RDSPARSER_MS_UNKNOWN);
 
     expect_function_call(callback_ms);
     ctx->ms = 0;
@@ -371,7 +381,7 @@ verification_ms_false(void **state)
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234000001230458"), true);
 
     rdsparser_clear(&ctx->rds);
-    assert_int_equal(rdsparser_get_ms(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_ms(&ctx->rds), RDSPARSER_MS_UNKNOWN);
 }
 
 static void
@@ -381,7 +391,7 @@ verification_ms_invalid(void **state)
     rdsparser_register_ms(&ctx->rds, callback_ms);
 
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "123400000000000010"), true);
-    assert_int_equal(rdsparser_get_ms(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_ms(&ctx->rds), RDSPARSER_MS_UNKNOWN);
 }
 
 static void
@@ -389,7 +399,7 @@ verification_ecc(void **state)
 {
     test_context_t *ctx = *state;
     rdsparser_register_ecc(&ctx->rds, callback_ecc);
-    assert_int_equal(rdsparser_get_ecc(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_ecc(&ctx->rds), RDSPARSER_ECC_UNKNOWN);
 
     expect_function_call(callback_ecc);
     ctx->ecc = 0xE2;
@@ -398,7 +408,7 @@ verification_ecc(void **state)
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "3566100000E20000"), true);
 
     rdsparser_clear(&ctx->rds);
-    assert_int_equal(rdsparser_get_ecc(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_ecc(&ctx->rds), RDSPARSER_ECC_UNKNOWN);
 }
 
 static void
@@ -409,7 +419,36 @@ verification_ecc_invalid(void **state)
 
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "3566100000E2000010"), true);
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "3566100000E2000004"), true);
-    assert_int_equal(rdsparser_get_ecc(&ctx->rds), -1);
+    assert_int_equal(rdsparser_get_ecc(&ctx->rds), RDSPARSER_ECC_UNKNOWN);
+}
+
+static void
+verification_country(void **state)
+{
+    test_context_t *ctx = *state;
+    rdsparser_register_country(&ctx->rds, callback_country);
+    assert_int_equal(rdsparser_get_country(&ctx->rds), RDSPARSER_COUNTRY_UNKNOWN);
+
+    expect_function_call(callback_country);
+    ctx->country = RDSPARSER_COUNTRY_DENMARK;
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "9201154000E1000000"), true);
+    /* Same value, no callback */
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "9201154000E1000000"), true);
+
+    rdsparser_clear(&ctx->rds);
+    assert_int_equal(rdsparser_get_country(&ctx->rds), RDSPARSER_COUNTRY_UNKNOWN);
+}
+
+static void
+verification_country_invalid(void **state)
+{
+    test_context_t *ctx = *state;
+    rdsparser_register_country(&ctx->rds, callback_country);
+
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "9201154000E1000040"), true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "9201154000E1000010"), true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "9201154000E1000004"), true);
+    assert_int_equal(rdsparser_get_country(&ctx->rds), RDSPARSER_COUNTRY_UNKNOWN);
 }
 
 static void
@@ -881,6 +920,8 @@ const struct CMUnitTest tests[] =
     cmocka_unit_test_setup_teardown(verification_ms_invalid, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ecc, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ecc_invalid, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(verification_country, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(verification_country_invalid, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_af, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_af_invalid, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ps, test_setup, test_teardown),

@@ -12,6 +12,7 @@ koffi.proto('void callback_tp(void *rds, void *user_data)');
 koffi.proto('void callback_ta(void *rds, void *user_data)');
 koffi.proto('void callback_ms(void *rds, void *user_data)');
 koffi.proto('void callback_ecc(void *rds, void *user_data)');
+koffi.proto('void callback_country(void *rds, void *user_data)');
 koffi.proto('void callback_af(void *rds, uint32_t af, void *user_data)');
 koffi.proto('void callback_ps(void *rds, void *user_data)');
 koffi.proto('void callback_rt(void *rds, int flag, void *user_data)');
@@ -28,7 +29,8 @@ const rdsparser = {
     get_tp: lib.func('int8_t rdsparser_get_tp(void *rds)'),
     get_ta: lib.func('int8_t rdsparser_get_ta(void *rds)'),
     get_ms: lib.func('int8_t rdsparser_get_ms(void *rds)'),
-    get_ecc: lib.func('int8_t rdsparser_get_ecc(void *rds)'),
+    get_ecc: lib.func('int16_t rdsparser_get_ecc(void *rds)'),
+    get_country: lib.func('int rdsparser_get_country(void *rds)'),
     get_ps: lib.func('void* rdsparser_get_ps(void *rds)'),
     get_rt: lib.func('void* rdsparser_get_rt(void *rds, int flag)'),
     get_ptyn: lib.func('void* rdsparser_get_ptyn(void *rds)'),
@@ -38,6 +40,7 @@ const rdsparser = {
     register_ta: lib.func('void rdsparser_register_ta(void *rds, callback_ta *cb)'),
     register_ms: lib.func('void rdsparser_register_ms(void *rds, callback_ms *cb)'),
     register_ecc: lib.func('void rdsparser_register_ecc(void *rds, callback_ecc *cb)'),
+    register_country: lib.func('void rdsparser_register_country(void *rds, callback_country *cb)'),
     register_af: lib.func('void rdsparser_register_af(void *rds, callback_af *cb)'),
     register_ps: lib.func('void rdsparser_register_ps(void *rds, callback_ps *cb)'),
     register_rt: lib.func('void rdsparser_register_rt(void *rds, callback_rt *cb)'),
@@ -52,7 +55,9 @@ const rdsparser = {
     ct_get_minute: lib.func('uint8_t rdsparser_ct_get_minute(void *ct)'),
     ct_get_offset: lib.func('int8_t rdsparser_ct_get_offset(void *ct)'),
     pty_lookup_short: lib.func('const char* rdsparser_pty_lookup_short(int8_t pty, bool rbds)'),
-    pty_lookup_long: lib.func('const char* rdsparser_pty_lookup_long(int8_t pty, bool rbds)')
+    pty_lookup_long: lib.func('const char* rdsparser_pty_lookup_long(int8_t pty, bool rbds)'),
+    country_lookup_name: lib.func('const char* rdsparser_country_lookup_name(int country)'),
+    country_lookup_iso: lib.func('const char* rdsparser_country_lookup_iso(int country)')
 }
 
 const decode_unicode = function(string) {
@@ -98,6 +103,13 @@ const callbacks = {
         console.log('ECC: ' + value.toString(16).toUpperCase())
     ), 'callback_ecc*'),
 
+    country: koffi.register(rds => (
+        value = rdsparser.get_country(rds),
+        display = rdsparser.country_lookup_name(value),
+        iso = rdsparser.country_lookup_iso(value),
+        console.log('Country: ' + display + ' (' + iso + ')')
+    ), 'callback_country*'),
+
     ps: koffi.register(rds => (
         value = decode_unicode(rdsparser.get_ps(rds)),
         console.log('PS: ' + value)
@@ -134,6 +146,7 @@ rdsparser.register_tp(rds, callbacks.tp)
 rdsparser.register_ta(rds, callbacks.ta)
 rdsparser.register_ms(rds, callbacks.ms)
 rdsparser.register_ecc(rds, callbacks.ecc)
+rdsparser.register_country(rds, callbacks.country)
 rdsparser.register_af(rds, callbacks.af)
 rdsparser.register_ps(rds, callbacks.ps)
 rdsparser.register_rt(rds, callbacks.rt)
@@ -235,7 +248,8 @@ let data = [
     '34DB2542616D793A00',
     '34DBA5505241444900',
     '34DBA5514F20372000',
-    '34DB4541D750018200'
+    '34DB4541D750018200',
+    "34DB154000E2000000"
 ]
 
 for (let group of data) {

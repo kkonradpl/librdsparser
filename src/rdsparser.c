@@ -65,6 +65,7 @@ rdsparser_clear(rdsparser_t *rds)
     rds->ta = RDSPARSER_TA_UNKNOWN;
     rds->ms = RDSPARSER_MS_UNKNOWN;
     rds->ecc = RDSPARSER_ECC_UNKNOWN;
+    rds->country = RDSPARSER_COUNTRY_UNKNOWN;
     rdsparser_af_clear(&rds->af);
     rdsparser_string_clear(rds->ps);
     rdsparser_string_clear(rds->rt[0]);
@@ -252,6 +253,26 @@ rdsparser_get_ecc(const rdsparser_t *rds)
 }
 
 void
+rdsparser_set_country(rdsparser_t         *rds,
+                      rdsparser_country_t  country)
+{
+    if (rds->country != country)
+    {
+        rds->country = country;
+        if (rds->callback_country)
+        {
+            rds->callback_country(rds, rds->user_data);
+        }
+    }
+}
+
+rdsparser_country_t
+rdsparser_get_country(const rdsparser_t *rds)
+{
+    return rds->country;
+}
+
+void
 rdsparser_set_af(rdsparser_t *rds,
                  uint8_t      new_af)
 {
@@ -335,6 +356,13 @@ rdsparser_register_ecc(rdsparser_t  *rds,
                        void        (*callback_ecc)(rdsparser_t*, void*))
 {
     rds->callback_ecc = callback_ecc;
+}
+
+void
+rdsparser_register_country(rdsparser_t  *rds,
+                           void        (*callback_country)(rdsparser_t*, void*))
+{
+    rds->callback_country = callback_country;
 }
 
 void

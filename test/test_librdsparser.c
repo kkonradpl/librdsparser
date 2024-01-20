@@ -110,6 +110,14 @@ callback_ecc(rdsparser_t *rds,
 }
 
 static void
+callback_country(rdsparser_t *rds,
+                 void        *user_data)
+{
+    (void)user_data;
+    function_called();
+}
+
+static void
 callback_af(rdsparser_t *rds,
             uint32_t     new_af,
             void        *user_data)
@@ -165,6 +173,7 @@ rdsparser_test_reset(void **state)
     assert_int_equal(rdsparser_get_ta(&ctx->rds), RDSPARSER_TA_UNKNOWN);
     assert_int_equal(rdsparser_get_ms(&ctx->rds), RDSPARSER_MS_UNKNOWN);
     assert_int_equal(rdsparser_get_ecc(&ctx->rds), RDSPARSER_ECC_UNKNOWN);
+    assert_int_equal(rdsparser_get_country(&ctx->rds), RDSPARSER_COUNTRY_UNKNOWN);
 
     const rdsparser_af_t *af = rdsparser_get_af(&ctx->rds);
     for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
@@ -435,6 +444,15 @@ rdsparser_test_register_ecc(void **state)
 }
 
 static void
+rdsparser_test_register_country(void **state)
+{
+    test_context_t *ctx = *state;
+    rdsparser_register_country(&ctx->rds, callback_country);
+    expect_function_call(callback_country);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "34DB154000E2000000"), true);
+}
+
+static void
 rdsparser_test_register_af(void **state)
 {
     test_context_t *ctx = *state;
@@ -505,6 +523,7 @@ const struct CMUnitTest tests[] =
     cmocka_unit_test_setup_teardown(rdsparser_test_register_ms, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_register_pty, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_register_ecc, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(rdsparser_test_register_country, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_register_af, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_register_ps, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_register_rt, test_setup, test_teardown),
