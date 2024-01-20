@@ -26,81 +26,81 @@
 static void
 pty_test_get_rds_short_invalid(void **state)
 {
-    assert_string_equal(rdsparser_pty_lookup(-1, false, false), "Invalid");
-    assert_string_equal(rdsparser_pty_lookup(64, false, false), "Invalid");
-    assert_string_equal(rdsparser_pty_lookup(32, false, false), "Invalid");
+    assert_string_equal(rdsparser_pty_lookup_short(-1, false), "Invalid");
+    assert_string_equal(rdsparser_pty_lookup_short(64, false), "Invalid");
+    assert_string_equal(rdsparser_pty_lookup_short(32, false), "Invalid");
 }
 
 static void
 pty_test_get_rbds_short_invalid(void **state)
 {
-    assert_string_equal(rdsparser_pty_lookup(-1, true, false), "Invalid");
-    assert_string_equal(rdsparser_pty_lookup(-53, true, false), "Invalid");
-    assert_string_equal(rdsparser_pty_lookup(32, true, false), "Invalid");
+    assert_string_equal(rdsparser_pty_lookup_short(-1, true), "Invalid");
+    assert_string_equal(rdsparser_pty_lookup_short(-53, true), "Invalid");
+    assert_string_equal(rdsparser_pty_lookup_short(32, true), "Invalid");
 }
 
 static void
 pty_test_get_rds_long_invalid(void **state)
 {
-    assert_string_equal(rdsparser_pty_lookup(-1, false, true), "Invalid");
-    assert_string_equal(rdsparser_pty_lookup(127, false, true), "Invalid");
-    assert_string_equal(rdsparser_pty_lookup(32, false, true), "Invalid");
+    assert_string_equal(rdsparser_pty_lookup_long(-1, false), "Invalid");
+    assert_string_equal(rdsparser_pty_lookup_long(127, false), "Invalid");
+    assert_string_equal(rdsparser_pty_lookup_long(32, false), "Invalid");
 }
 
 static void
 pty_test_get_rbds_long_invalid(void **state)
 {
-    assert_string_equal(rdsparser_pty_lookup(-1, true, true), "Invalid");
-    assert_string_equal(rdsparser_pty_lookup(-128, true, true), "Invalid");
-    assert_string_equal(rdsparser_pty_lookup(32, true, true), "Invalid");
+    assert_string_equal(rdsparser_pty_lookup_long(-1, true), "Invalid");
+    assert_string_equal(rdsparser_pty_lookup_long(-128, true), "Invalid");
+    assert_string_equal(rdsparser_pty_lookup_long(32, true), "Invalid");
 }
 
 static void
 pty_test_get_rds_short_light(void **state)
 {
-    assert_string_equal(rdsparser_pty_lookup(13, false, true), "Light M");
+    assert_string_equal(rdsparser_pty_lookup_short(13, false), "Light M");
 }
 
 static void
 pty_test_get_rds_long_light(void **state)
 {
-    assert_string_equal(rdsparser_pty_lookup(13, false, false), "Light Classics M");
+    assert_string_equal(rdsparser_pty_lookup_long(13, false), "Light Classics M");
 }
 
 static void
 pty_test_get_rbds_short_nostalgia(void **state)
 {
-    assert_string_equal(rdsparser_pty_lookup(13, true, true), "Nostalga");
+    assert_string_equal(rdsparser_pty_lookup_short(13, true), "Nostalga");
 }
 
 static void
 pty_test_get_rbds_long_nostalgia(void **state)
 {
-    assert_string_equal(rdsparser_pty_lookup(13, true, false), "Nostalgia");
+    assert_string_equal(rdsparser_pty_lookup_long(13, true), "Nostalgia");
 }
 
 static void
 pty_test_get_rds_short_alarm(void **state)
 {
-    assert_string_equal(rdsparser_pty_lookup(31, false, true), "Alarm !");
+    assert_string_equal(rdsparser_pty_lookup_short(31, false), "Alarm !");
 }
 
 static void
 pty_test_get_rds_long_alarm(void **state)
 {
-    assert_string_equal(rdsparser_pty_lookup(31, false, false), "Alarm - Alarm !");
+    assert_string_equal(rdsparser_pty_lookup_long(31, false), "Alarm - Alarm !");
 }
 
 static void
 pty_test_get_rbds_short_alert(void **state)
 {
-    assert_string_equal(rdsparser_pty_lookup(31, true, true), "ALERT !");
+    assert_string_equal(rdsparser_pty_lookup_short(31, true), "ALERT !");
 }
 
 static void
 pty_test_get_rbds_long_alert(void **state)
 {
-    assert_string_equal(rdsparser_pty_lookup(31, true, false), "ALERT! ALERT!");
+    assert_string_equal(rdsparser_pty_lookup_long(31, true), "ALERT! ALERT!");
 }
 
 const struct CMUnitTest tests[] =

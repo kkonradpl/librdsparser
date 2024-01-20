@@ -16,8 +16,9 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <librdsparser.h>
 
-static const char *rdsparser_pty_rds[] =
+static const char *rdsparser_pty_rds_long[] =
 {
     "None",
     "News",
@@ -53,7 +54,7 @@ static const char *rdsparser_pty_rds[] =
     "Alarm - Alarm !"
 };
 
-static const char *rdsparser_pty_rbds[] =
+static const char *rdsparser_pty_rbds_long[] =
 {
     "None",
     "News",
@@ -163,9 +164,8 @@ static const char *rdsparser_pty_rbds_short[] =
 
 
 const char*
-rdsparser_pty_lookup(int8_t  pty,
-                     bool    rbds,
-                     bool    short_version)
+rdsparser_pty_lookup(rdsparser_pty_t   pty,
+                     const char      **lut)
 {
     if (pty < 0 ||
         pty >= 32)
@@ -174,16 +174,22 @@ rdsparser_pty_lookup(int8_t  pty,
         return invalid;
     }
 
-    const char **lut;
-
-    if (short_version)
-    {
-        lut = rbds ? rdsparser_pty_rbds_short : rdsparser_pty_rds_short;
-    }
-    else
-    {
-        lut = rbds ? rdsparser_pty_rbds : rdsparser_pty_rds;
-    }
-
     return lut[pty];
+}
+
+const char*
+rdsparser_pty_lookup_short(rdsparser_pty_t pty,
+                           bool            rbds)
+{
+    const char **lut = rbds ? rdsparser_pty_rbds_short : rdsparser_pty_rds_short;
+    return rdsparser_pty_lookup(pty, lut);
+}
+
+
+const char*
+rdsparser_pty_lookup_long(rdsparser_pty_t pty,
+                          bool            rbds)
+{
+    const char **lut = rbds ? rdsparser_pty_rbds_long : rdsparser_pty_rds_long;
+    return rdsparser_pty_lookup(pty, lut);
 }

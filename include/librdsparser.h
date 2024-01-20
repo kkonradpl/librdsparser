@@ -192,7 +192,8 @@ uint8_t rdsparser_ct_get_hour(const rdsparser_ct_t *ct);
 uint8_t rdsparser_ct_get_minute(const rdsparser_ct_t *ct);
 int16_t rdsparser_ct_get_offset(const rdsparser_ct_t *ct);
 
-const char* rdsparser_pty_lookup(int8_t pty, bool rbds, bool short_version);
+const char* rdsparser_pty_lookup_short(rdsparser_pty_t pty, bool rbds);
+const char* rdsparser_pty_lookup_long(rdsparser_pty_t pty, bool rbds);
 
 #ifdef __cplusplus
 }
