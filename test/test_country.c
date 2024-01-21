@@ -96,8 +96,8 @@ country_test_lookup_uzbekistan(void **state)
 static void
 country_test_lookup_bosnia(void **state)
 {
-    assert_string_equal(rdsparser_country_lookup_iso(RDSPARSER_COUNTRY_BOSNIA), "BA");
-    assert_string_equal(rdsparser_country_lookup_name(RDSPARSER_COUNTRY_BOSNIA), "Bosnia");
+    assert_string_equal(rdsparser_country_lookup_iso(RDSPARSER_COUNTRY_BOSNIA_HERZEGOVINA), "BA");
+    assert_string_equal(rdsparser_country_lookup_name(RDSPARSER_COUNTRY_BOSNIA_HERZEGOVINA), "Bosnia Herzegovina");
 }
 
 static void
@@ -105,6 +105,41 @@ country_test_lookup_kosovo(void **state)
 {
     assert_string_equal(rdsparser_country_lookup_iso(RDSPARSER_COUNTRY_KOSOVO), "XK");
     assert_string_equal(rdsparser_country_lookup_name(RDSPARSER_COUNTRY_KOSOVO), "Kosovo");
+}
+
+static void
+country_test_lookup_usa(void **state)
+{
+    assert_string_equal(rdsparser_country_lookup_iso(RDSPARSER_COUNTRY_USA_OR_VI_OR_PR), "--");
+    assert_string_equal(rdsparser_country_lookup_name(RDSPARSER_COUNTRY_USA_OR_VI_OR_PR), "USA/VI/PR");
+}
+
+static void
+country_test_lookup_netherlands_antilles(void **state)
+{
+    assert_string_equal(rdsparser_country_lookup_iso(RDSPARSER_COUNTRY_BRAZIL_OR_NETHERLANDS_ANTILLES), "--");
+    assert_string_equal(rdsparser_country_lookup_name(RDSPARSER_COUNTRY_BRAZIL_OR_NETHERLANDS_ANTILLES), "Brazil/AN");
+}
+
+static void
+country_test_lookup_bermuda(void **state)
+{
+    assert_string_equal(rdsparser_country_lookup_iso(RDSPARSER_COUNTRY_BRAZIL_OR_BERMUDA), "--");
+    assert_string_equal(rdsparser_country_lookup_name(RDSPARSER_COUNTRY_BRAZIL_OR_BERMUDA), "Brazil/Bermuda");
+}
+
+static void
+country_test_lookup_equator(void **state)
+{
+    assert_string_equal(rdsparser_country_lookup_iso(RDSPARSER_COUNTRY_BRAZIL_OR_EQUATOR), "--");
+    assert_string_equal(rdsparser_country_lookup_name(RDSPARSER_COUNTRY_BRAZIL_OR_EQUATOR), "Brazil/Equator");
+}
+
+static void
+country_test_lookup_albania(void **state)
+{
+    assert_string_equal(rdsparser_country_lookup_iso(RDSPARSER_COUNTRY_ALBANIA), "AL");
+    assert_string_equal(rdsparser_country_lookup_name(RDSPARSER_COUNTRY_ALBANIA), "Albania");
 }
 
 const struct CMUnitTest tests[] =
@@ -120,7 +155,12 @@ const struct CMUnitTest tests[] =
     cmocka_unit_test_setup_teardown(country_test_lookup_macedonia, NULL, NULL),
     cmocka_unit_test_setup_teardown(country_test_lookup_uzbekistan, NULL, NULL),
     cmocka_unit_test_setup_teardown(country_test_lookup_bosnia, NULL, NULL),
-    cmocka_unit_test_setup_teardown(country_test_lookup_kosovo, NULL, NULL)
+    cmocka_unit_test_setup_teardown(country_test_lookup_kosovo, NULL, NULL),
+    cmocka_unit_test_setup_teardown(country_test_lookup_usa, NULL, NULL),
+    cmocka_unit_test_setup_teardown(country_test_lookup_netherlands_antilles, NULL, NULL),
+    cmocka_unit_test_setup_teardown(country_test_lookup_bermuda, NULL, NULL),
+    cmocka_unit_test_setup_teardown(country_test_lookup_equator, NULL, NULL),
+    cmocka_unit_test_setup_teardown(country_test_lookup_albania, NULL, NULL)
 };
 
 int

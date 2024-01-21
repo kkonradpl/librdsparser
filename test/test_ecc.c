@@ -92,7 +92,7 @@ ecc_test_lookup_uzbekistan(void **state)
 static void
 ecc_test_lookup_bosnia(void **state)
 {
-    assert_int_equal(rdsparser_ecc_lookup(0xFFFF, 0xE4), RDSPARSER_COUNTRY_BOSNIA);
+    assert_int_equal(rdsparser_ecc_lookup(0xFFFF, 0xE4), RDSPARSER_COUNTRY_BOSNIA_HERZEGOVINA);
 }
 
 static void
@@ -105,6 +105,138 @@ static void
 ecc_test_lookup_kyrgyzstan(void **state)
 {
     assert_int_equal(rdsparser_ecc_lookup(0x3000, 0xE5), RDSPARSER_COUNTRY_KYRGYZSTAN);
+}
+
+static void
+ecc_test_lookup_greenland(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0xFAFA, 0xA1), RDSPARSER_COUNTRY_GREENLAND);
+}
+
+static void
+ecc_test_lookup_argentina(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0xAAAA, 0xA2), RDSPARSER_COUNTRY_ARGENTINA);
+}
+
+static void
+ecc_test_lookup_panama(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0x9876, 0xA3), RDSPARSER_COUNTRY_PANAMA);
+}
+
+static void
+ecc_test_lookup_haiti(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0xDEEF, 0xA4), RDSPARSER_COUNTRY_HAITI);
+}
+
+static void
+ecc_test_lookup_mexico(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0xBBBC, 0xA5), RDSPARSER_COUNTRY_MEXICO);
+}
+
+static void
+ecc_test_lookup_st_pierre(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0xF519, 0xA6), RDSPARSER_COUNTRY_ST_PIERRE_AND_MIQUELON);
+}
+
+static void
+ecc_test_lookup_benin(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0xEDFA, 0xD0), RDSPARSER_COUNTRY_BENIN);
+}
+
+static void
+ecc_test_lookup_ghana(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0x3513, 0xD1), RDSPARSER_COUNTRY_GHANA);
+}
+
+static void
+ecc_test_lookup_guinea_bissau(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0xA4A2, 0xD2), RDSPARSER_COUNTRY_GUINEA_BISSAU);
+}
+
+static void
+ecc_test_lookup_rwanda(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0x5355, 0xD3), RDSPARSER_COUNTRY_RWANDA);
+}
+
+static void
+ecc_test_lookup_south_sudan(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0xA000, 0xD4), RDSPARSER_COUNTRY_SOUTH_SUDAN);
+}
+
+static void
+ecc_test_lookup_afghanistan(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0xA000, 0xF0), RDSPARSER_COUNTRY_AFGHANISTAN);
+}
+
+static void
+ecc_test_lookup_south_korea(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0xECCA, 0xF1), RDSPARSER_COUNTRY_SOUTH_KOREA);
+}
+
+static void
+ecc_test_lookup_macao(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0x6660, 0xF2), RDSPARSER_COUNTRY_MACAO);
+}
+
+static void
+ecc_test_lookup_yemen(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0xB000, 0xF3), RDSPARSER_COUNTRY_YEMEN);
+}
+
+static void
+ecc_test_lookup_china(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0x958D, 0xF4), RDSPARSER_COUNTRY_CHINA);
+}
+
+static void
+ecc_test_lookup_multi1(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0xDDDD, 0xA2), RDSPARSER_COUNTRY_BRAZIL_OR_NETHERLANDS_ANTILLES);
+}
+
+static void
+ecc_test_lookup_multi2(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0xCCCC, 0xA2), RDSPARSER_COUNTRY_BRAZIL_OR_BERMUDA);
+}
+
+static void
+ecc_test_lookup_multi3(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0x3133, 0xA2), RDSPARSER_COUNTRY_BRAZIL_OR_EQUATOR);
+}
+
+static void
+ecc_test_lookup_multi4(void **state)
+{
+    assert_int_equal(rdsparser_ecc_lookup(0x1000, 0xA0), RDSPARSER_COUNTRY_USA_OR_VI_OR_PR);
+    assert_int_equal(rdsparser_ecc_lookup(0x2000, 0xA0), RDSPARSER_COUNTRY_USA_OR_VI_OR_PR);
+    assert_int_equal(rdsparser_ecc_lookup(0x3000, 0xA0), RDSPARSER_COUNTRY_USA_OR_VI_OR_PR);
+    assert_int_equal(rdsparser_ecc_lookup(0x4000, 0xA0), RDSPARSER_COUNTRY_USA_OR_VI_OR_PR);
+    assert_int_equal(rdsparser_ecc_lookup(0x5000, 0xA0), RDSPARSER_COUNTRY_USA_OR_VI_OR_PR);
+    assert_int_equal(rdsparser_ecc_lookup(0x6000, 0xA0), RDSPARSER_COUNTRY_USA_OR_VI_OR_PR);
+    assert_int_equal(rdsparser_ecc_lookup(0x7000, 0xA0), RDSPARSER_COUNTRY_USA_OR_VI_OR_PR);
+    assert_int_equal(rdsparser_ecc_lookup(0x8000, 0xA0), RDSPARSER_COUNTRY_USA_OR_VI_OR_PR);
+    assert_int_equal(rdsparser_ecc_lookup(0x9000, 0xA0), RDSPARSER_COUNTRY_USA_OR_VI_OR_PR);
+    assert_int_equal(rdsparser_ecc_lookup(0xA000, 0xA0), RDSPARSER_COUNTRY_USA_OR_VI_OR_PR);
+    assert_int_equal(rdsparser_ecc_lookup(0xB000, 0xA0), RDSPARSER_COUNTRY_USA_OR_VI_OR_PR);
+    assert_int_equal(rdsparser_ecc_lookup(0xD000, 0xA0), RDSPARSER_COUNTRY_USA_OR_VI_OR_PR);
+    assert_int_equal(rdsparser_ecc_lookup(0xE000, 0xA0), RDSPARSER_COUNTRY_USA_OR_VI_OR_PR);
 }
 
 const struct CMUnitTest tests[] =
@@ -122,7 +254,28 @@ const struct CMUnitTest tests[] =
     cmocka_unit_test_setup_teardown(ecc_test_lookup_uzbekistan, NULL, NULL),
     cmocka_unit_test_setup_teardown(ecc_test_lookup_bosnia, NULL, NULL),
     cmocka_unit_test_setup_teardown(ecc_test_lookup_kosovo, NULL, NULL),
-    cmocka_unit_test_setup_teardown(ecc_test_lookup_kyrgyzstan, NULL, NULL)
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_kyrgyzstan, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_greenland, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_argentina, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_panama, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_haiti, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_mexico, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_st_pierre, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_benin, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_ghana, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_guinea_bissau, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_rwanda, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_south_sudan, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_afghanistan, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_south_korea, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_macao, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_yemen, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_macao, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_china, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_multi1, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_multi2, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_multi3, NULL, NULL),
+    cmocka_unit_test_setup_teardown(ecc_test_lookup_multi4, NULL, NULL)
 };
 
 int
