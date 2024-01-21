@@ -36,7 +36,8 @@ static const rdsparser_country_t rdsparser_ecc_a0_a6_lut[][15] =
         /* B */ RDSPARSER_COUNTRY_USA_OR_VI_OR_PR,
         /* C */ RDSPARSER_COUNTRY_UNKNOWN,
         /* D */ RDSPARSER_COUNTRY_USA_OR_VI_OR_PR,
-        /* E */ RDSPARSER_COUNTRY_USA_OR_VI_OR_PR
+        /* E */ RDSPARSER_COUNTRY_USA_OR_VI_OR_PR,
+        /* F */ RDSPARSER_COUNTRY_UNKNOWN
     },
     {   /* A1 */
         /* 1 */ RDSPARSER_COUNTRY_UNKNOWN,
@@ -209,7 +210,8 @@ static const rdsparser_country_t rdsparser_ecc_d0_d4_lut[][15] =
         /* B */ RDSPARSER_COUNTRY_UNKNOWN,
         /* C */ RDSPARSER_COUNTRY_SUDAN,
         /* D */ RDSPARSER_COUNTRY_UNKNOWN,
-        /* E */ RDSPARSER_COUNTRY_UNKNOWN
+        /* E */ RDSPARSER_COUNTRY_UNKNOWN,
+        /* F */ RDSPARSER_COUNTRY_UNKNOWN
     },
     {   /* D4 */
         /* 1 */ RDSPARSER_COUNTRY_UNKNOWN,
@@ -225,7 +227,8 @@ static const rdsparser_country_t rdsparser_ecc_d0_d4_lut[][15] =
         /* B */ RDSPARSER_COUNTRY_UNKNOWN,
         /* C */ RDSPARSER_COUNTRY_UNKNOWN,
         /* D */ RDSPARSER_COUNTRY_UNKNOWN,
-        /* E */ RDSPARSER_COUNTRY_UNKNOWN
+        /* E */ RDSPARSER_COUNTRY_UNKNOWN,
+        /* F */ RDSPARSER_COUNTRY_UNKNOWN
     }
 };
 
@@ -246,7 +249,7 @@ static const rdsparser_country_t rdsparser_ecc_e0_e5_lut[][15] =
         /* C */ RDSPARSER_COUNTRY_MALTA,
         /* D */ RDSPARSER_COUNTRY_GERMANY,
         /* E */ RDSPARSER_COUNTRY_UNKNOWN,
-        /* F */ RDSPARSER_COUNTRY_EGYPT,
+        /* F */ RDSPARSER_COUNTRY_EGYPT
     },
     {   /* E1 */
         /* 1 */ RDSPARSER_COUNTRY_GREECE,
@@ -263,7 +266,7 @@ static const rdsparser_country_t rdsparser_ecc_e0_e5_lut[][15] =
         /* C */ RDSPARSER_COUNTRY_UNITED_KINGDOM,
         /* D */ RDSPARSER_COUNTRY_LIBYA,
         /* E */ RDSPARSER_COUNTRY_ROMANIA,
-        /* F */ RDSPARSER_COUNTRY_FRANCE,
+        /* F */ RDSPARSER_COUNTRY_FRANCE
     },
     {   /* E2 */
         /* 1 */ RDSPARSER_COUNTRY_MOROCCO,
@@ -280,7 +283,7 @@ static const rdsparser_country_t rdsparser_ecc_e0_e5_lut[][15] =
         /* C */ RDSPARSER_COUNTRY_LITHUANIA,
         /* D */ RDSPARSER_COUNTRY_SERBIA,
         /* E */ RDSPARSER_COUNTRY_SPAIN,
-        /* F */ RDSPARSER_COUNTRY_NORWAY,
+        /* F */ RDSPARSER_COUNTRY_NORWAY
     },
     {   /* E3 */
         /* 1 */ RDSPARSER_COUNTRY_MONTENEGRO,
@@ -297,7 +300,7 @@ static const rdsparser_country_t rdsparser_ecc_e0_e5_lut[][15] =
         /* C */ RDSPARSER_COUNTRY_CROATIA,
         /* D */ RDSPARSER_COUNTRY_KAZAKHSTAN,
         /* E */ RDSPARSER_COUNTRY_SWEDEN,
-        /* F */ RDSPARSER_COUNTRY_BELARUS,
+        /* F */ RDSPARSER_COUNTRY_BELARUS
     },
     {   /* E4 */
         /* 1 */ RDSPARSER_COUNTRY_MOLDOVA,
@@ -314,7 +317,7 @@ static const rdsparser_country_t rdsparser_ecc_e0_e5_lut[][15] =
         /* C */ RDSPARSER_COUNTRY_GEORGIA,
         /* D */ RDSPARSER_COUNTRY_UNKNOWN,
         /* E */ RDSPARSER_COUNTRY_TURKMENISTAN,
-        /* F */ RDSPARSER_COUNTRY_BOSNIA_HERZEGOVINA,
+        /* F */ RDSPARSER_COUNTRY_BOSNIA_HERZEGOVINA
     },
     {   /* E5 */
         /* 1 */ RDSPARSER_COUNTRY_UNKNOWN,
@@ -331,6 +334,7 @@ static const rdsparser_country_t rdsparser_ecc_e0_e5_lut[][15] =
         /* C */ RDSPARSER_COUNTRY_UNKNOWN,
         /* D */ RDSPARSER_COUNTRY_UNKNOWN,
         /* E */ RDSPARSER_COUNTRY_UNKNOWN,
+        /* F */ RDSPARSER_COUNTRY_UNKNOWN
     }
 };
 
@@ -419,7 +423,7 @@ static const rdsparser_country_t rdsparser_ecc_f0_f4_lut[][15] =
         /* C */ RDSPARSER_COUNTRY_UNKNOWN,
         /* D */ RDSPARSER_COUNTRY_UNKNOWN,
         /* E */ RDSPARSER_COUNTRY_UNKNOWN,
-
+        /* F */ RDSPARSER_COUNTRY_UNKNOWN
     }
 };
 
