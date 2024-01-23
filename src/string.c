@@ -188,10 +188,11 @@ rdsparser_string_update_single(rdsparser_string_t      *string,
 
     if (input >= 0x7F)
     {
-        if (data_error != RDSPARSER_BLOCK_ERROR_NONE)
+        if (info_error != RDSPARSER_BLOCK_ERROR_NONE &&
+            data_error != RDSPARSER_BLOCK_ERROR_NONE)
         {
             /* Special characters are used rarely,
-               so use only error-free data */
+               so use only error-free info and data */
             return false;
         }
 #ifdef RDSPARSER_DISABLE_UNICODE
