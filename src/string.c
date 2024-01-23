@@ -188,7 +188,7 @@ rdsparser_string_update_single(rdsparser_string_t      *string,
 
     if (input >= 0x7F)
     {
-        if (info_error != RDSPARSER_BLOCK_ERROR_NONE &&
+        if (info_error != RDSPARSER_BLOCK_ERROR_NONE ||
             data_error != RDSPARSER_BLOCK_ERROR_NONE)
         {
             /* Special characters are used rarely,
