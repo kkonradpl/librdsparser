@@ -24,35 +24,35 @@
 #include "pty.c"
 
 static void
-pty_test_get_rds_short_invalid(void **state)
+pty_test_get_rds_short_unknown(void **state)
 {
-    assert_string_equal(rdsparser_pty_lookup_short(-1, false), "Invalid");
-    assert_string_equal(rdsparser_pty_lookup_short(64, false), "Invalid");
-    assert_string_equal(rdsparser_pty_lookup_short(32, false), "Invalid");
+    assert_string_equal(rdsparser_pty_lookup_short(-1, false), "Unknown");
+    assert_string_equal(rdsparser_pty_lookup_short(64, false), "Unknown");
+    assert_string_equal(rdsparser_pty_lookup_short(32, false), "Unknown");
 }
 
 static void
-pty_test_get_rbds_short_invalid(void **state)
+pty_test_get_rbds_short_unknown(void **state)
 {
-    assert_string_equal(rdsparser_pty_lookup_short(-1, true), "Invalid");
-    assert_string_equal(rdsparser_pty_lookup_short(-53, true), "Invalid");
-    assert_string_equal(rdsparser_pty_lookup_short(32, true), "Invalid");
+    assert_string_equal(rdsparser_pty_lookup_short(-1, true), "Unknown");
+    assert_string_equal(rdsparser_pty_lookup_short(-53, true), "Unknown");
+    assert_string_equal(rdsparser_pty_lookup_short(32, true), "Unknown");
 }
 
 static void
-pty_test_get_rds_long_invalid(void **state)
+pty_test_get_rds_long_unknown(void **state)
 {
-    assert_string_equal(rdsparser_pty_lookup_long(-1, false), "Invalid");
-    assert_string_equal(rdsparser_pty_lookup_long(127, false), "Invalid");
-    assert_string_equal(rdsparser_pty_lookup_long(32, false), "Invalid");
+    assert_string_equal(rdsparser_pty_lookup_long(-1, false), "Unknown");
+    assert_string_equal(rdsparser_pty_lookup_long(127, false), "Unknown");
+    assert_string_equal(rdsparser_pty_lookup_long(32, false), "Unknown");
 }
 
 static void
-pty_test_get_rbds_long_invalid(void **state)
+pty_test_get_rbds_long_unknown(void **state)
 {
-    assert_string_equal(rdsparser_pty_lookup_long(-1, true), "Invalid");
-    assert_string_equal(rdsparser_pty_lookup_long(-128, true), "Invalid");
-    assert_string_equal(rdsparser_pty_lookup_long(32, true), "Invalid");
+    assert_string_equal(rdsparser_pty_lookup_long(-1, true), "Unknown");
+    assert_string_equal(rdsparser_pty_lookup_long(-128, true), "Unknown");
+    assert_string_equal(rdsparser_pty_lookup_long(32, true), "Unknown");
 }
 
 static void
@@ -105,10 +105,10 @@ pty_test_get_rbds_long_alert(void **state)
 
 const struct CMUnitTest tests[] =
 {
-    cmocka_unit_test_setup_teardown(pty_test_get_rds_short_invalid, NULL, NULL),
-    cmocka_unit_test_setup_teardown(pty_test_get_rbds_short_invalid, NULL, NULL),
-    cmocka_unit_test_setup_teardown(pty_test_get_rds_long_invalid, NULL, NULL),
-    cmocka_unit_test_setup_teardown(pty_test_get_rbds_long_invalid, NULL, NULL),
+    cmocka_unit_test_setup_teardown(pty_test_get_rds_short_unknown, NULL, NULL),
+    cmocka_unit_test_setup_teardown(pty_test_get_rbds_short_unknown, NULL, NULL),
+    cmocka_unit_test_setup_teardown(pty_test_get_rds_long_unknown, NULL, NULL),
+    cmocka_unit_test_setup_teardown(pty_test_get_rbds_long_unknown, NULL, NULL),
     cmocka_unit_test_setup_teardown(pty_test_get_rds_short_light, NULL, NULL),
     cmocka_unit_test_setup_teardown(pty_test_get_rds_long_light, NULL, NULL),
     cmocka_unit_test_setup_teardown(pty_test_get_rbds_short_nostalgia, NULL, NULL),

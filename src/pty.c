@@ -167,14 +167,14 @@ const char*
 rdsparser_pty_lookup(rdsparser_pty_t   pty,
                      const char      **lut)
 {
-    if (pty < 0 ||
-        pty >= 32)
+    if (pty >= 0 &&
+        pty < 32)
     {
-        static const char invalid[] = "Invalid";
-        return invalid;
+        return lut[pty];
     }
 
-    return lut[pty];
+    static const char unknown[] = "Unknown";
+    return unknown;
 }
 
 const char*
@@ -184,7 +184,6 @@ rdsparser_pty_lookup_short(rdsparser_pty_t pty,
     const char **lut = rbds ? rdsparser_pty_rbds_short : rdsparser_pty_rds_short;
     return rdsparser_pty_lookup(pty, lut);
 }
-
 
 const char*
 rdsparser_pty_lookup_long(rdsparser_pty_t pty,
