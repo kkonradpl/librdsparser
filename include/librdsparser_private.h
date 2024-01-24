@@ -34,9 +34,8 @@ typedef struct rdsparser_af
     uint8_t buffer[RDSPARSER_AF_BUFFER_SIZE];
 } rdsparser_af_t;
 
-struct librdsparser
+typedef struct rdsparser_buffer_data
 {
-    /* Data buffers */
     rdsparser_pi_t pi;
     rdsparser_pty_t pty;
     rdsparser_tp_t tp;
@@ -45,6 +44,19 @@ struct librdsparser
     rdsparser_ecc_t ecc;
     rdsparser_country_t country;
     rdsparser_af_t af;
+} rdsparser_buffer_data_t;
+
+typedef struct rdsparser_buffer
+{
+    rdsparser_buffer_data_t data_used;
+    rdsparser_buffer_data_t data_temp;
+    bool extended_check;
+} rdsparser_buffer_t;
+
+struct librdsparser
+{
+    /* Data buffers */
+    rdsparser_buffer_t buffer;
     rdsparser_string_t ps[RDSPARSER_STRING_SIZE(RDSPARSER_PS_LENGTH)];
     rdsparser_string_t rt[RDSPARSER_RT_FLAG_COUNT][RDSPARSER_STRING_SIZE(RDSPARSER_RT_LENGTH)];
     rdsparser_string_t ptyn[RDSPARSER_STRING_SIZE(RDSPARSER_PTYN_LENGTH)];

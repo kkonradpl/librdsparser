@@ -1,7 +1,7 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
  *  librdsparser – Radio Data System parser library
- *  Copyright (C) 2023  Konrad Kosmatka
+ *  Copyright (C) 2023-2024  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -14,31 +14,37 @@
  *  Lesser General Public License for more details.
  */
 
-#include <stdint.h>
-#include <stdbool.h>
 #include <librdsparser_private.h>
 
 bool
-rdsparser_af_add(rdsparser_af_t *af,
-                 uint8_t         new_af)
+rdsparser_af_set(rdsparser_af_t *af,
+                 uint8_t         value)
 {
-    if (new_af == 0 ||
-        new_af > 204)
+    if (value == 0 ||
+        value > 204)
     {
         return false;
     }
 
-    const uint8_t pos = new_af / 8;
-    const uint8_t bitPos = new_af % 8;
+    const uint8_t pos = value / 8;
+    const uint8_t bitPos = value % 8;
+    af->buffer[pos] |= (0x80 >> bitPos);
+    return true;
+}
 
-    const bool exists = af->buffer[pos] & (0x80 >> bitPos);
-    if (!exists)
+bool
+rdsparser_af_get(const rdsparser_af_t *af,
+                 uint8_t               value)
+{
+    if (value == 0 ||
+        value > 204)
     {
-        af->buffer[pos] |= (0x80 >> bitPos);
-        return true;
+        return false;
     }
 
-    return false;
+    const uint8_t pos = value / 8;
+    const uint8_t bitPos = value % 8;
+    return af->buffer[pos] & (0x80 >> bitPos);
 }
 
 void

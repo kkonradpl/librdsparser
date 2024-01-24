@@ -1,7 +1,7 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
  *  librdsparser – Radio Data System parser library
- *  Copyright (C) 2023  Konrad Kosmatka
+ *  Copyright (C) 2023-2024  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -60,24 +60,29 @@ test_teardown(void **state)
 }
 
 static void
-af_test_add_each_frequency(void **state)
+af_test_set_each_frequency(void **state)
 {
     test_context_t *ctx = *state;
+    uint8_t i = 0;
 
-    for (uint8_t i = 1; i <= 204; i++)
+    do
     {
-        assert_int_equal(rdsparser_af_add(&ctx->af, i), true);
-        assert_int_equal(rdsparser_af_add(&ctx->af, i), false);
-    }
+        assert_int_equal(rdsparser_af_get(&ctx->af, i), false);
+        bool ret = (i >= 1 && i <= 204);
+        assert_int_equal(rdsparser_af_set(&ctx->af, i), ret);
+        assert_int_equal(rdsparser_af_get(&ctx->af, i), ret);
+    } while (++i > 0);
 }
 
 static void
-af_test_add_one_frequency(void **state)
+af_test_set_one_frequency(void **state)
 {
     test_context_t *ctx = *state;
 
     const uint8_t id = 123;
-    assert_int_equal(rdsparser_af_add(&ctx->af, id), true);
+    assert_int_equal(rdsparser_af_get(&ctx->af, id), false);
+    rdsparser_af_set(&ctx->af, id);
+    assert_int_equal(rdsparser_af_get(&ctx->af, id), true);
 
     for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
     {
@@ -90,28 +95,28 @@ af_test_add_one_frequency(void **state)
             assert_int_equal(ctx->af.buffer[i], 0);
         }
     }
-
-    assert_int_equal(rdsparser_af_add(&ctx->af, id), false);
 }
 
 static void
-af_test_add_clear_add(void **state)
+af_test_set_clear(void **state)
 {
     test_context_t *ctx = *state;
 
     const uint8_t id = 200;
-    assert_int_equal(rdsparser_af_add(&ctx->af, id), true);
+    assert_int_equal(rdsparser_af_get(&ctx->af, id), false);
+    assert_int_equal(rdsparser_af_set(&ctx->af, id), true);
+    assert_int_equal(rdsparser_af_get(&ctx->af, id), true);
     rdsparser_af_clear(&ctx->af);
-    assert_int_equal(rdsparser_af_add(&ctx->af, id), true);
+    assert_int_equal(rdsparser_af_get(&ctx->af, id), false);
 }
 
 static void
-af_test_add_invalid_0(void **state)
+af_test_set_invalid_0(void **state)
 {
     test_context_t *ctx = *state;
 
     const uint8_t id = 0;
-    assert_int_equal(rdsparser_af_add(&ctx->af, id), false);
+    assert_int_equal(rdsparser_af_set(&ctx->af, id), false);
 
     for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
     {
@@ -120,13 +125,13 @@ af_test_add_invalid_0(void **state)
 }
 
 static void
-af_test_add_invalid(void **state)
+af_test_set_invalid(void **state)
 {
     test_context_t *ctx = *state;
 
     for (uint8_t id = 205; id != 0; id++)
     {
-        assert_int_equal(rdsparser_af_add(&ctx->af, id), false);
+        assert_int_equal(rdsparser_af_set(&ctx->af, id), false);
     }
 
     for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
@@ -137,11 +142,11 @@ af_test_add_invalid(void **state)
 
 const struct CMUnitTest tests[] =
 {
-    cmocka_unit_test_setup_teardown(af_test_add_each_frequency, test_setup, test_teardown),
-    cmocka_unit_test_setup_teardown(af_test_add_one_frequency, test_setup, test_teardown),
-    cmocka_unit_test_setup_teardown(af_test_add_clear_add, test_setup, test_teardown),
-    cmocka_unit_test_setup_teardown(af_test_add_invalid_0, test_setup, test_teardown),
-    cmocka_unit_test_setup_teardown(af_test_add_invalid, test_setup, test_teardown)
+    cmocka_unit_test_setup_teardown(af_test_set_each_frequency, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(af_test_set_one_frequency, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(af_test_set_clear, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(af_test_set_invalid_0, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(af_test_set_invalid, test_setup, test_teardown)
 };
 
 int

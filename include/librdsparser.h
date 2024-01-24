@@ -376,6 +376,9 @@ void rdsparser_clear(rdsparser_t *rds);
 void rdsparser_parse(rdsparser_t *rds, rdsparser_data_t data, rdsparser_error_t errors);
 bool rdsparser_parse_string(rdsparser_t *rds, const char *input);
 
+void rdsparser_set_extended_check(rdsparser_t *rds, bool value);
+bool rdsparser_get_extended_check(const rdsparser_t *rds);
+
 void rdsparser_set_text_correction(rdsparser_t *rds, rdsparser_text_t text, rdsparser_block_type_t type, rdsparser_block_error_t error);
 rdsparser_block_error_t rdsparser_get_text_correction(const rdsparser_t *rds, rdsparser_text_t text, rdsparser_block_type_t type);
 

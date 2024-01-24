@@ -24,6 +24,7 @@ const rdsparser = {
     free: lib.func('void rdsparser_free(void *rds)'),
     clear: lib.func('void rdsparser_clear(void *rds)'),
     parse_string: lib.func('bool rdsparser_parse_string(void *rds, const char *input)'),
+    set_extended_check: lib.func('bool rdsparser_set_extended_check(void *rds, bool value)'),
     set_text_correction: lib.func('bool rdsparser_set_text_correction(void *rds, uint8_t text, uint8_t type, uint8_t error)'),
     set_text_progressive: lib.func('bool rdsparser_set_text_progressive(void *rds, uint8_t string, bool state)'),
     get_pi: lib.func('int32_t rdsparser_get_pi(void *rds)'),
@@ -160,20 +161,20 @@ rdsparser.set_text_correction(rds, 0, 0, 2);
 rdsparser.set_text_correction(rds, 0, 1, 2);
 rdsparser.set_text_correction(rds, 1, 0, 2);
 rdsparser.set_text_correction(rds, 1, 1, 2);
-rdsparser.set_text_progressive(rds, 0, true)
-rdsparser.set_text_progressive(rds, 1, true)
-rdsparser.register_pi(rds, callbacks.pi)
-rdsparser.register_pty(rds, callbacks.pty)
-rdsparser.register_tp(rds, callbacks.tp)
-rdsparser.register_ta(rds, callbacks.ta)
-rdsparser.register_ms(rds, callbacks.ms)
-rdsparser.register_ecc(rds, callbacks.ecc)
-rdsparser.register_country(rds, callbacks.country)
-rdsparser.register_af(rds, callbacks.af)
-rdsparser.register_ps(rds, callbacks.ps)
-rdsparser.register_rt(rds, callbacks.rt)
-rdsparser.register_ptyn(rds, callbacks.ptyn)
-rdsparser.register_ct(rds, callbacks.ct)
+rdsparser.set_text_progressive(rds, 0, true);
+rdsparser.set_text_progressive(rds, 1, true);
+rdsparser.register_pi(rds, callbacks.pi);
+rdsparser.register_pty(rds, callbacks.pty);
+rdsparser.register_tp(rds, callbacks.tp);
+rdsparser.register_ta(rds, callbacks.ta);
+rdsparser.register_ms(rds, callbacks.ms);
+rdsparser.register_ecc(rds, callbacks.ecc);
+rdsparser.register_country(rds, callbacks.country);
+rdsparser.register_af(rds, callbacks.af);
+rdsparser.register_ps(rds, callbacks.ps);
+rdsparser.register_rt(rds, callbacks.rt);
+rdsparser.register_ptyn(rds, callbacks.ptyn);
+rdsparser.register_ct(rds, callbacks.ct);
 
 let data = [
     "A20120017420696E02",

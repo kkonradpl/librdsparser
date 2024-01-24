@@ -1,7 +1,7 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
  *  librdsparser – Radio Data System parser library
- *  Copyright (C) 2023  Konrad Kosmatka
+ *  Copyright (C) 2023-2024  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,8 @@
 #include <stdint.h>
 #include <librdsparser.h>
 
-bool rdsparser_af_add(rdsparser_af_t *af, uint8_t new_af);
+bool rdsparser_af_set(rdsparser_af_t *af, uint8_t value);
+bool rdsparser_af_get(const rdsparser_af_t *af, uint8_t value);
 void rdsparser_af_clear(rdsparser_af_t *af);
 
 #endif

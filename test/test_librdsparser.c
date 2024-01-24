@@ -323,6 +323,19 @@ test_correction(void                  **state,
 }
 
 static void
+rdsparser_test_extended_check(void **state)
+{
+    test_context_t *ctx = *state;
+
+    assert_int_equal(rdsparser_get_extended_check(&ctx->rds), false);
+    rdsparser_set_extended_check(&ctx->rds, true);
+    assert_int_equal(rdsparser_get_extended_check(&ctx->rds), true);
+    rdsparser_set_extended_check(&ctx->rds, false);
+    assert_int_equal(rdsparser_get_extended_check(&ctx->rds), false);
+}
+
+
+static void
 rdsparser_test_ps_info_correction(void **state)
 {
     test_correction(state, RDSPARSER_TEXT_PS, RDSPARSER_BLOCK_TYPE_INFO);
@@ -508,6 +521,7 @@ const struct CMUnitTest tests[] =
     cmocka_unit_test_setup_teardown(rdsparser_test_parse_string_invalid, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_parse_string_short, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_parse_string_long, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(rdsparser_test_extended_check, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_ps_info_correction, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_ps_data_correction, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_rt_info_correction, test_setup, test_teardown),

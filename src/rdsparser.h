@@ -24,6 +24,6 @@ void rdsparser_set_ta(rdsparser_t *rds, rdsparser_ta_t ta);
 void rdsparser_set_ms(rdsparser_t *rds, rdsparser_ms_t ms);
 void rdsparser_set_ecc(rdsparser_t *rds, rdsparser_ecc_t ecc);
 void rdsparser_set_country(rdsparser_t *rds, rdsparser_country_t country);
-void rdsparser_set_af(rdsparser_t *rds, uint8_t new_af);
+void rdsparser_add_af(rdsparser_t *rds, uint8_t new_af);
 
 #endif

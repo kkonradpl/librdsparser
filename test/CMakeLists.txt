@@ -17,6 +17,7 @@ function(ADD_RDSPARSER_TEST TEST_NAME)
 endfunction()
 
 add_rdsparser_test(test_af)
+add_rdsparser_test(test_buffer)
 add_rdsparser_test(test_country)
 add_rdsparser_test(test_ct)
 add_rdsparser_test(test_ecc)

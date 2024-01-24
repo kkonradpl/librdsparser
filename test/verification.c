@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <librdsparser.h>
 #include "parser.h"
+#include "af.h"
 #include "asserts.h"
 
 typedef struct {
@@ -236,6 +237,16 @@ verification_pi_invalid(void **state)
 }
 
 static void
+verification_pi_extended_check(void **state)
+{
+    test_context_t *ctx = *state;
+    rdsparser_set_extended_check(&ctx->rds, true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234567890123458"), true);
+    assert_int_equal(rdsparser_get_pi(&ctx->rds), RDSPARSER_PI_UNKNOWN);
+    verification_pi(state);
+}
+
+static void
 verification_pty(void **state)
 {
     test_context_t *ctx = *state;
@@ -260,6 +271,16 @@ verification_pty_invalid(void **state)
 
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "123400000000000010"), true);
     assert_int_equal(rdsparser_get_pty(&ctx->rds), RDSPARSER_PTY_UNKNOWN);
+}
+
+static void
+verification_pty_extended_check(void **state)
+{
+    test_context_t *ctx = *state;
+    rdsparser_set_extended_check(&ctx->rds, true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234567890123458"), true);
+    assert_int_equal(rdsparser_get_pty(&ctx->rds), RDSPARSER_PTY_UNKNOWN);
+    verification_pty(state);
 }
 
 static void
@@ -307,6 +328,16 @@ verification_tp_invalid(void **state)
 }
 
 static void
+verification_tp_extended_check(void **state)
+{
+    test_context_t *ctx = *state;
+    rdsparser_set_extended_check(&ctx->rds, true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234567890123458"), true);
+    assert_int_equal(rdsparser_get_tp(&ctx->rds), RDSPARSER_TP_UNKNOWN);
+    verification_tp_true(state);
+}
+
+static void
 verification_ta_true(void **state)
 {
     test_context_t *ctx = *state;
@@ -351,6 +382,16 @@ verification_ta_invalid(void **state)
 }
 
 static void
+verification_ta_extended_check(void **state)
+{
+    test_context_t *ctx = *state;
+    rdsparser_set_extended_check(&ctx->rds, true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "12340FFFFFFFFFFF"), true);
+    assert_int_equal(rdsparser_get_ta(&ctx->rds), RDSPARSER_TA_UNKNOWN);
+    verification_ta_true(state);
+}
+
+static void
 verification_ms_true(void **state)
 {
     test_context_t *ctx = *state;
@@ -382,6 +423,16 @@ verification_ms_false(void **state)
 
     rdsparser_clear(&ctx->rds);
     assert_int_equal(rdsparser_get_ms(&ctx->rds), RDSPARSER_MS_UNKNOWN);
+}
+
+static void
+verification_ms_extended_check(void **state)
+{
+    test_context_t *ctx = *state;
+    rdsparser_set_extended_check(&ctx->rds, true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "12340FFFFFFFFFFF"), true);
+    assert_int_equal(rdsparser_get_ms(&ctx->rds), RDSPARSER_MS_UNKNOWN);
+    verification_ms_true(state);
 }
 
 static void
@@ -423,6 +474,16 @@ verification_ecc_invalid(void **state)
 }
 
 static void
+verification_ecc_extended_check(void **state)
+{
+    test_context_t *ctx = *state;
+    rdsparser_set_extended_check(&ctx->rds, true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "3566100000E20000"), true);
+    assert_int_equal(rdsparser_get_ecc(&ctx->rds), RDSPARSER_ECC_UNKNOWN);
+    verification_ecc(state);
+}
+
+static void
 verification_country(void **state)
 {
     test_context_t *ctx = *state;
@@ -452,6 +513,16 @@ verification_country_invalid(void **state)
 }
 
 static void
+verification_country_extended_check(void **state)
+{
+    test_context_t *ctx = *state;
+    rdsparser_set_extended_check(&ctx->rds, true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "9201154000E1000000"), true);
+    assert_int_equal(rdsparser_get_country(&ctx->rds), RDSPARSER_COUNTRY_UNKNOWN);
+    verification_ecc(state);
+}
+
+static void
 verification_af(void **state)
 {
     test_context_t *ctx = *state;
@@ -460,9 +531,9 @@ verification_af(void **state)
     uint8_t af2 = 0x01;
 
     const rdsparser_af_t *af = rdsparser_get_af(&ctx->rds);
-    for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
+    for (uint8_t i = 1; i <= 204; i++)
     {
-        assert_int_equal(af->buffer[i], 0);
+        assert_int_equal(rdsparser_af_get(af, i), 0);
     }
 
     expect_function_calls(callback_af, 2);
@@ -471,25 +542,23 @@ verification_af(void **state)
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234007890013458"), true);
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234007890013458"), true);
 
-    for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
+    for (uint8_t i = 1; i <= 204; i++)
     {
-        if (i == (af1 / 8) ||
-            i == (af2 / 8))
+        if (i == af1 ||
+            i == af2)
         {
+            assert_int_equal(rdsparser_af_get(af, i), 1);
             continue;
         }
 
-        assert_int_equal(af->buffer[i], 0);
+        assert_int_equal(rdsparser_af_get(af, i), 0);
     }
-
-    assert_int_equal(af->buffer[af1 / 8], 0x80 >> (af1 % 8));
-    assert_int_equal(af->buffer[af2 / 8], 0x80 >> (af2 % 8));
 
     rdsparser_clear(&ctx->rds);
 
-    for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
+    for (uint8_t i = 1; i <= 204; i++)
     {
-        assert_int_equal(af->buffer[i], 0);
+        assert_int_equal(rdsparser_af_get(af, i), 0);
     }
 }
 
@@ -503,10 +572,26 @@ verification_af_invalid(void **state)
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "123400789001345804"), true);
 
     const rdsparser_af_t *af = rdsparser_get_af(&ctx->rds);
-    for (uint8_t i = 0; i < RDSPARSER_AF_BUFFER_SIZE; i++)
+    for (uint8_t i = 1; i <= 204; i++)
     {
-        assert_int_equal(af->buffer[i], 0);
+        assert_int_equal(rdsparser_af_get(af, i), 0);
     }
+}
+
+static void
+verification_af_extended_check(void **state)
+{
+    test_context_t *ctx = *state;
+    rdsparser_set_extended_check(&ctx->rds, true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234007890013458"), true);
+
+    const rdsparser_af_t *af = rdsparser_get_af(&ctx->rds);
+    for (uint8_t i = 1; i <= 204; i++)
+    {
+        assert_int_equal(rdsparser_af_get(af, i), 0);
+    }
+
+    verification_af(state);
 }
 
 static void
@@ -907,23 +992,31 @@ const struct CMUnitTest tests[] =
 {
     cmocka_unit_test_setup_teardown(verification_pi, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_pi_invalid, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(verification_pi_extended_check, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_pty, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_pty_invalid, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(verification_pty_extended_check, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_tp_true, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_tp_false, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_tp_invalid, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(verification_tp_extended_check, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ta_true, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ta_false, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ta_invalid, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(verification_ta_extended_check, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ms_true, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ms_false, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ms_invalid, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(verification_ms_extended_check, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ecc, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ecc_invalid, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(verification_ecc_extended_check, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_country, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_country_invalid, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(verification_country_extended_check, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_af, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_af_invalid, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(verification_af_extended_check, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ps, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ps_invalid, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ps_invalid_pos, test_setup, test_teardown),
