@@ -174,8 +174,7 @@ rdsparser_buffer_add_af(rdsparser_buffer_t *buffer,
             return false;
         }
 
-        rdsparser_af_set(&buffer->data_used.af, value);
-        return true;
+        return rdsparser_af_set(&buffer->data_used.af, value);
     }
     
     return false;

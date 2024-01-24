@@ -20,31 +20,31 @@ bool
 rdsparser_af_set(rdsparser_af_t *af,
                  uint8_t         value)
 {
-    if (value == 0 ||
-        value > 204)
+    if (value >= 1 &&
+        value <= 204)
     {
-        return false;
+        const uint8_t pos = value / 8;
+        const uint8_t bitPos = value % 8;
+        af->buffer[pos] |= (0x80 >> bitPos);
+        return true;
     }
 
-    const uint8_t pos = value / 8;
-    const uint8_t bitPos = value % 8;
-    af->buffer[pos] |= (0x80 >> bitPos);
-    return true;
+    return false;
 }
 
 bool
 rdsparser_af_get(const rdsparser_af_t *af,
                  uint8_t               value)
 {
-    if (value == 0 ||
-        value > 204)
+    if (value >= 1 &&
+        value <= 204)
     {
-        return false;
+        const uint8_t pos = value / 8;
+        const uint8_t bitPos = value % 8;
+        return af->buffer[pos] & (0x80 >> bitPos);
     }
 
-    const uint8_t pos = value / 8;
-    const uint8_t bitPos = value % 8;
-    return af->buffer[pos] & (0x80 >> bitPos);
+    return false;
 }
 
 void
