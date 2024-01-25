@@ -481,15 +481,15 @@ rdsparser_country_lookup(rdsparser_country_t   country,
 }
 
 const char*
-rdsparser_country_lookup_iso(rdsparser_country_t country)
-{
-    static const char *unknown = "??";
-    return rdsparser_country_lookup(country, rdsparser_country_iso_lut, unknown);
-}
-
-const char*
 rdsparser_country_lookup_name(rdsparser_country_t country)
 {
     static const char *unknown = "Unknown";
     return rdsparser_country_lookup(country, rdsparser_country_name_lut, unknown);
+}
+
+const char*
+rdsparser_country_lookup_iso(rdsparser_country_t country)
+{
+    static const char *unknown = "??";
+    return rdsparser_country_lookup(country, rdsparser_country_iso_lut, unknown);
 }

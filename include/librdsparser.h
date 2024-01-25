@@ -424,10 +424,11 @@ uint8_t rdsparser_ct_get_hour(const rdsparser_ct_t *ct);
 uint8_t rdsparser_ct_get_minute(const rdsparser_ct_t *ct);
 int16_t rdsparser_ct_get_offset(const rdsparser_ct_t *ct);
 
+const char* rdsparser_pty_lookup_name(rdsparser_pty_t pty, bool rbds);
 const char* rdsparser_pty_lookup_short(rdsparser_pty_t pty, bool rbds);
 const char* rdsparser_pty_lookup_long(rdsparser_pty_t pty, bool rbds);
-const char* rdsparser_country_lookup_iso(rdsparser_country_t country);
 const char* rdsparser_country_lookup_name(rdsparser_country_t country);
+const char* rdsparser_country_lookup_iso(rdsparser_country_t country);
 
 #ifdef __cplusplus
 }

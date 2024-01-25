@@ -18,81 +18,45 @@
 #include <stdbool.h>
 #include <librdsparser.h>
 
-static const char *rdsparser_pty_rds_long[] =
+static const char *rdsparser_pty_rds_name[] =
 {
-    "None",
+    "No programme type or undefined",
     "News",
-    "Current Affairs",
+    "Current affairs",
     "Information",
     "Sport",
     "Education",
     "Drama",
-    "Cultures",
+    "Culture",
     "Science",
-    "Varied Speech",
-    "Pop Music",
-    "Rock Music",
-    "Easy Listening",
-    "Light Classics M",
-    "Serious Classics",
-    "Other Music",
-    "Weather & Metr",
-    "Finance",
-    "Children's Progs",
-    "Social Affairs",
-    "Religion",
-    "Phone In",
-    "Travel & Touring",
-    "Leisure & Hobby",
-    "Jazz Music",
-    "Country Music",
-    "National Music",
-    "Oldies Music",
-    "Folk Music",
-    "Documentary",
-    "Alarm Test",
-    "Alarm - Alarm !"
-};
-
-static const char *rdsparser_pty_rbds_long[] =
-{
-    "None",
-    "News",
-    "Information",
-    "Sport",
-    "Talk",
-    "Rock",
-    "Classic Rock",
-    "Adult Hits",
-    "Soft Rock",
-    "Top 40",
-    "Country",
-    "Oldies",
-    "Soft",
-    "Nostalgia",
-    "Jazz",
-    "Classical",
-    "Rhythm and Blues",
-    "Soft R & B",
-    "Foreign Language",
-    "Religious Music",
-    "Religious Talk",
-    "Personality",
-    "Public",
-    "College",
-    "Hablar Espanol",
-    "Musica Espanol",
-    "Hip hop",
-    "Not assigned",
-    "Not assigned",
+    "Varied",
+    "Pop music",
+    "Rock music",
+    "Easy listening music",
+    "Light classical",
+    "Serious classical",
+    "Other music",
     "Weather",
-    "Emergency Test",
-    "ALERT! ALERT!"
+    "Finance",
+    "Children's programmes",
+    "Social affairs",
+    "Religion",
+    "Phone in",
+    "Travel",
+    "Leisure",
+    "Jazz music",
+    "Country music",
+    "National music",
+    "Oldies music",
+    "Folk music",
+    "Documentary",
+    "Alarm test",
+    "Alarm"
 };
 
 static const char *rdsparser_pty_rds_short[] =
 {
-    "None",
+    "",
     "News",
     "Affairs",
     "Info",
@@ -113,7 +77,7 @@ static const char *rdsparser_pty_rds_short[] =
     "Children",
     "Social",
     "Religion",
-    "Phone In",
+    "Phone in",
     "Travel",
     "Leisure",
     "Jazz",
@@ -124,6 +88,78 @@ static const char *rdsparser_pty_rds_short[] =
     "Document",
     "TEST",
     "Alarm !"
+};
+
+static const char *rdsparser_pty_rds_long[] =
+{
+    "",
+    "News",
+    "Current affairs",
+    "Information",
+    "Sport",
+    "Education",
+    "Drama",
+    "Cultures",
+    "Science",
+    "Varied speech",
+    "Pop music",
+    "Rock music",
+    "Easy listening",
+    "Light classics m",
+    "Serious classics",
+    "Other music",
+    "Weather & metr",
+    "Finance",
+    "Children's progs",
+    "Social affairs",
+    "Religion",
+    "Phone in",
+    "Travel & touring",
+    "Leisure & hobby",
+    "Jazz music",
+    "Country music",
+    "National music",
+    "Oldies music",
+    "Folk music",
+    "Documentary",
+    "Alarm test",
+    "Alarm - Alarm !"
+};
+
+static const char *rdsparser_pty_rbds_name[] =
+{
+    "No program type or undefined",
+    "News",
+    "Information",
+    "Sports",
+    "Talk",
+    "Rock",
+    "Classic Rock",
+    "Adult Hits",
+    "Soft Rock",
+    "Top 40",
+    "Country",
+    "Oldies",
+    "Soft",
+    "Nostalgia",
+    "Jazz",
+    "Classical",
+    "Rhythm and Blues",
+    "Soft Rhythm and Blues",
+    "Foreign Language",
+    "Religious Music",
+    "Religious Talk",
+    "Personality",
+    "Public",
+    "College",
+    "Spanish Talk",
+    "Spanish Music",
+    "Hip-Hop",
+    "Unassigned",
+    "Unassigned",
+    "Weather",
+    "Emergency Test",
+    "Emergency"
 };
 
 static const char *rdsparser_pty_rbds_short[] =
@@ -155,11 +191,47 @@ static const char *rdsparser_pty_rbds_short[] =
     "Habl Esp",
     "Musc Esp",
     "Hip hop",
-    "N/A",
-    "N/A",
+    "",
+    "",
     "Weather",
     "Test",
     "ALERT !"
+};
+
+static const char *rdsparser_pty_rbds_long[] =
+{
+    "None",
+    "News",
+    "Information",
+    "Sports",
+    "Talk",
+    "Rock",
+    "Classic Rock",
+    "Adult Hits",
+    "Soft Rock",
+    "Top 40",
+    "Country",
+    "Oldies",
+    "Soft",
+    "Nostalgia",
+    "Jazz",
+    "Classical",
+    "Rhythm and Blues",
+    "Soft R & B",
+    "Foreign Language",
+    "Religious Music",
+    "Religious Talk",
+    "Personality",
+    "Public",
+    "College",
+    "Hablar Espanol",
+    "Musica Espanol",
+    "Hip hop",
+    "",
+    "",
+    "Weather",
+    "Emergency Test",
+    "ALERT! ALERT!"
 };
 
 
@@ -175,6 +247,14 @@ rdsparser_pty_lookup(rdsparser_pty_t   pty,
 
     static const char unknown[] = "Unknown";
     return unknown;
+}
+
+const char*
+rdsparser_pty_lookup_name(rdsparser_pty_t pty,
+                          bool            rbds)
+{
+    const char **lut = rbds ? rdsparser_pty_rbds_name : rdsparser_pty_rds_name;
+    return rdsparser_pty_lookup(pty, lut);
 }
 
 const char*
