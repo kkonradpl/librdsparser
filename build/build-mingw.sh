@@ -1,3 +1,6 @@
 #!/bin/bash
-cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_BUILD_TYPE=Release \
+      -DRDSPARSER_DISABLE_TESTS=1 \
+      -G "MSYS Makefiles" ..
+
 make
