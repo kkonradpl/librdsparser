@@ -16,14 +16,16 @@ jobs:
           msystem: MINGW64
           install: >-
             git
-            make
-            cmake
+            mingw-w64-i686-cmake
+            mingw-w64-i686-make
             mingw-w64-i686-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-make
             mingw-w64-x86_64-gcc
       - shell: msys2 {0}
         name: Compile the project
         run : |
-          cd build && CC=x86_64-w64-mingw32-g++ ./build-mingw.sh
+          cd build && ./build-mingw.sh
       - name: Move artifacts
         run: |
           mkdir artifacts
