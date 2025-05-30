@@ -8,8 +8,9 @@ jobs:
   release-msys2:
     runs-on: windows-latest
     
-    matrix:
-      sys: [mingw64, mingw32]
+    strategy:
+      matrix:
+        sys: [mingw64, mingw32]
       
     steps:
       - name: Checkout repository
