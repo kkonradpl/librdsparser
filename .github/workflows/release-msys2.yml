@@ -7,8 +7,10 @@ on:
 jobs:
   release-msys2:
     runs-on: windows-latest
+    
     matrix:
-      - sys: [mingw64, mingw32]
+      sys: [mingw64, mingw32]
+      
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
