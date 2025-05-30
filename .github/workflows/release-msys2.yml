@@ -7,31 +7,34 @@ on:
 jobs:
   release-msys2:
     runs-on: windows-latest
+      matrix:
+        sys: [mingw64, mingw32]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       - uses: msys2/setup-msys2@v2
         with:
           update: true
-          msystem: MINGW64
+          msystem: ${{matrix.sys}}
           install: >-
             git
             make
-            mingw-w64-i686-cmake
-            mingw-w64-i686-gcc
-            mingw-w64-x86_64-cmake
-            mingw-w64-x86_64-gcc
+          pacboy: >-
+            cmake:p
+            gcc:p
       - shell: msys2 {0}
         name: Compile the project
         run : |
-          cd build && ./build-mingw.sh
+          cp build build-${{matrix.sys}}
+          cd build-${{matrix.sys}}
+          ./build-mingw.sh
       - name: Move artifacts
         run: |
           mkdir artifacts
-          move ./build/src/*.dll ./artifacts/
-          move ./build/src/*.a ./artifacts/
+          move ./build-${{matrix.sys}}/src/*.dll ./artifacts/
+          move ./build-${{matrix.sys}}/src/*.a ./artifacts/
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: release-msys2
+          name: ${{matrix.sys}}
           path: artifacts
