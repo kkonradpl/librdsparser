@@ -28,7 +28,7 @@ jobs:
       - shell: msys2 {0}
         name: Compile the project
         run : |
-          cp build build-${{matrix.sys}}
+          cp -r build build-${{matrix.sys}}
           cd build-${{matrix.sys}}
           ./build-mingw.sh
       - name: Move artifacts
