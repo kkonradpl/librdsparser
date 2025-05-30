@@ -1,0 +1,28 @@
+  release-msys2:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          msystem: MINGW64
+          install: >-
+            git
+            make
+            cmake
+            mingw-w64-i686-gcc
+            mingw-w64-x86_64-gcc
+      - shell: msys2 {0}
+        name: Compile the project
+        run : |
+          cd build && CC=x86_64-w64-mingw32-g++ ./build-mingw.sh ..
+      - name: Move artifacts
+        run: |
+          mkdir artifacts
+          move ./src/*.dll ./artifacts 
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v1.0.0  
+        with:
+          name: release-msys2
+          path: artifacts
