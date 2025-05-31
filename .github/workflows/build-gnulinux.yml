@@ -16,9 +16,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Add toolchain PPA
+        run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          sudo apt-get update
+    
       - name: Install dependencies
         run: |
-          sudo apt-get update
           sudo apt-get install -y cmake make gcc \
                                   gcc-multilib \
                                   gcc-arm-linux-gnueabi \
