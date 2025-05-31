@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-ubuntu:
-    runs-on: ubuntu-23.04
+    runs-on: ubuntu-latest
     
     strategy:
       matrix:
