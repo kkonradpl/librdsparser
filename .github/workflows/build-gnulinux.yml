@@ -10,12 +10,21 @@ jobs:
     
     strategy:
       matrix:
-        arch: [aarch64]
+        arch: [x86, x86_64, arm, aarch64]
       
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-    
+        
+      # https://github.com/actions/runner-images/issues/10977
+      - name: Powersaving for Github Actions xD
+        run: |
+          sudo tee /etc/dpkg/dpkg.cfg.d/01_nodoc > /dev/null << 'EOF'
+          path-exclude /usr/share/doc/*
+          path-exclude /usr/share/man/*
+          path-exclude /usr/share/info/*
+          EOF
+
       - name: Install dependencies
         run: |
           sudo apt-get install -y cmake make
