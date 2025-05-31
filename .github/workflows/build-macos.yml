@@ -1,0 +1,33 @@
+name: macOS build
+
+on:
+  push:
+    branches: [ "fixme" ]
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install cmake gcc
+
+      - name: Build for macOS
+        run: |
+          cd build
+          ./build-macos.sh
+
+      - name: Move artifacts
+        run: |
+          mkdir artifacts
+          mv ./build/src/*.dylib ./artifacts/
+          mv ./build/src/*.a ./artifacts/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: artifacts

@@ -1,6 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 cmake -DCMAKE_BUILD_TYPE=Release \
+      -G "MSYS Makefiles" \
       -DRDSPARSER_DISABLE_TESTS=1 \
-      -G "MSYS Makefiles" ..
+      "$@" \
+      ..
 
-make
+cmake --build .

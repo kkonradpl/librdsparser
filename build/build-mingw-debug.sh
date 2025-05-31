@@ -1,3 +1,7 @@
-#!/bin/bash
-cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Debug ..
-make
+#!/bin/sh
+cmake -DCMAKE_BUILD_TYPE=Debug .. \
+      -G "MSYS Makefiles" \
+      "$@" \
+      ..
+
+cmake --build .

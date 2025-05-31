@@ -1,0 +1,48 @@
+name: Windows build
+
+on:
+  push:
+    branches: [ "fixme" ]
+
+jobs:
+  build-msys2:
+    runs-on: windows-latest
+    
+    strategy:
+      matrix:
+        sys: [mingw64, mingw32]
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          msystem: ${{matrix.sys}}
+          install: >-
+            git
+            make
+          pacboy: >-
+            cmake:p
+            gcc:p
+
+      - name: Compile the project
+        shell: msys2 {0}
+        run : |
+          cp -r build build-${{matrix.sys}}
+          cd build-${{matrix.sys}}
+          ./build-mingw.sh
+
+      - name: Move artifacts
+        run: |
+          mkdir artifacts
+          move ./build-${{matrix.sys}}/src/*.dll ./artifacts/
+          move ./build-${{matrix.sys}}/src/*.a ./artifacts/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{matrix.sys}}
+          path: artifacts

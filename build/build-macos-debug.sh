@@ -1,6 +1,6 @@
 #!/bin/sh
 cmake -DCMAKE_BUILD_TYPE=Debug \
-      -DCMAKE_INSTALL_PREFIX="/usr" \
+      -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" \
       "$@" \
       ..
 
