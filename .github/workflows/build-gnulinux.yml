@@ -10,7 +10,7 @@ jobs:
     
     strategy:
       matrix:
-        arch: [x86, x86_64, arm, aarch64]
+        arch: [x86, x86_64]
       
     steps:
       - name: Checkout repository
@@ -23,10 +23,21 @@ jobs:
     
       - name: Install dependencies
         run: |
-          sudo apt-get install -y cmake make gcc \
-                                  gcc-multilib \
-                                  gcc-arm-linux-gnueabi \
-                                  gcc-aarch64-linux-gnu 
+          sudo apt-get install -y cmake make
+          case "${{ matrix.arch }}" in
+            x86)
+              sudo apt-get install -y gcc-multilib
+              ;;
+            x86|x86_64)
+              sudo apt-get install -y gcc
+              ;;
+            arm)
+              sudo apt-get install -y gcc-arm-linux-gnueabi
+              ;;
+            aarch64)
+              sudo apt-get install -y gcc-aarch64-linux-gnu
+              ;;
+          esac
 
       - name: Build
         run: |
