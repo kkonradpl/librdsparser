@@ -1,8 +1,8 @@
 name: macOS build
 
 on:
-  push:
-    branches: [ "fixme" ]
+  release:
+    types: [created]
 
 jobs:
   build-macos:
@@ -25,9 +25,16 @@ jobs:
           mkdir artifacts
           mv ./build/src/*.dylib ./artifacts/
           mv ./build/src/*.a ./artifacts/
+          zip -r macos.zip artifacts/*
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: macos
-          path: artifacts
+          path: macos.zip
+
+      - name: Upload assets to release
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          gh release upload ${{github.event.release.id}} macos.zip

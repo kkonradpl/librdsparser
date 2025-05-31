@@ -1,8 +1,8 @@
 name: GNU/Linux build
 
 on:
-  push:
-    branches: [ "fixme" ]
+  release:
+    types: [created]
 
 jobs:
   build-ubuntu:

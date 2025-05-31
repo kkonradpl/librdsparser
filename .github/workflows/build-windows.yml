@@ -1,8 +1,8 @@
 name: Windows build
 
 on:
-  push:
-    branches: [ "fixme" ]
+  release:
+    types: [created]
 
 jobs:
   build-msys2:
@@ -10,7 +10,7 @@ jobs:
     
     strategy:
       matrix:
-        sys: [mingw64, mingw32]
+        arch: [mingw64, mingw32]
       
     steps:
       - name: Checkout repository
@@ -20,7 +20,7 @@ jobs:
         uses: msys2/setup-msys2@v2
         with:
           update: true
-          msystem: ${{matrix.sys}}
+          msystem: ${{matrix.arch}}
           install: >-
             git
             make
@@ -31,18 +31,25 @@ jobs:
       - name: Compile the project
         shell: msys2 {0}
         run : |
-          cp -r build build-${{matrix.sys}}
-          cd build-${{matrix.sys}}
+          cp -r build build-${{matrix.arch}}
+          cd build-${{matrix.arch}}
           ./build-mingw.sh
 
       - name: Move artifacts
         run: |
           mkdir artifacts
-          move ./build-${{matrix.sys}}/src/*.dll ./artifacts/
-          move ./build-${{matrix.sys}}/src/*.a ./artifacts/
+          move ./build-${{matrix.arch}}/src/*.dll ./artifacts/
+          move ./build-${{matrix.arch}}/src/*.a ./artifacts/
+          zip -r ${{matrix.arch}}.zip artifacts/*
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{matrix.sys}}
-          path: artifacts
+          name: ${{matrix.arch}}
+          path: ${{matrix.arch}}.zip
+
+      - name: Upload assets to release
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          gh release upload ${{github.event.release.id}} ${{matrix.arch}}.zip
