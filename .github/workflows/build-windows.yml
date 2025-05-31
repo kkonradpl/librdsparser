@@ -43,7 +43,7 @@ jobs:
           mkdir artifacts
           move ./build-${{matrix.arch}}/src/*.dll ./artifacts/
           move ./build-${{matrix.arch}}/src/*.a ./artifacts/
-          zip -r "${{matrix.arch}}.zip" artifacts/*
+          Compress-Archive -Path "./artifacts/*" -DestinationPath "${{matrix.arch}}.zip"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
