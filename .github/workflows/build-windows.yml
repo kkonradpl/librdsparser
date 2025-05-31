@@ -8,10 +8,13 @@ jobs:
   build-msys2:
     runs-on: windows-latest
     
+    permissions:
+      contents: write
+
     strategy:
       matrix:
         arch: [mingw64, mingw32]
-      
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
