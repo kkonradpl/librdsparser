@@ -18,7 +18,7 @@ jobs:
       - name: Build for macOS
         run: |
           cd build
-          ./build.sh
+          ./build-macos.sh
 
       - name: Move artifacts
         run: |
