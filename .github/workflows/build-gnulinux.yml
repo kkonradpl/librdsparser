@@ -10,7 +10,7 @@ jobs:
     
     strategy:
       matrix:
-        arch: [arm]
+        arch: [aarch64]
       
     steps:
       - name: Checkout repository
