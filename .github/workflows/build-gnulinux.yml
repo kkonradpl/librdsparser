@@ -70,7 +70,7 @@ jobs:
           mkdir artifacts
           mv ./build/src/*.so ./artifacts/
           mv ./build/src/*.a ./artifacts/
-          zip -r ${{matrix.arch}}.zip artifacts/*
+          zip -r "${{matrix.arch}}.zip" artifacts/*
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -82,4 +82,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
-          gh release upload ${{github.event.release.id}} ${{matrix.arch}}.zip
+          gh release upload "${{github.event.release.tag_name}}" "${{matrix.arch}}.zip"
