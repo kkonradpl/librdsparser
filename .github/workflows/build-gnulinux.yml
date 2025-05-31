@@ -1,8 +1,8 @@
 name: GNU/Linux build
 
 on:
-  push:
-    branches: [ "githubtest" ]
+  release:
+    types: [created]
 
 jobs:
   build-ubuntu:
@@ -65,14 +65,21 @@ jobs:
               ;;
           esac
 
-      - name: Move artifacts
+      - name: Create artifacts
         run: |
           mkdir artifacts
           mv ./build/src/*.so ./artifacts/
           mv ./build/src/*.a ./artifacts/
+          zip -r ${{matrix.arch}}.zip artifacts/*
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{matrix.arch}}
-          path: artifacts
+          path: ${{matrix.arch}}.zip
+
+      - name: Upload assets to release
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          gh release upload ${{github.event.release.id}} ${{matrix.arch}}.zip
