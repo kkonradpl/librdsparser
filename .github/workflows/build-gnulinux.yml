@@ -64,8 +64,8 @@ jobs:
       - name: Move artifacts
         run: |
           mkdir artifacts
-          move ./build-${{matrix.arch}}/src/*.so ./artifacts/
-          move ./build-${{matrix.arch}}/src/*.a ./artifacts/
+          mv ./build-${{matrix.arch}}/src/*.so ./artifacts/
+          mv ./build-${{matrix.arch}}/src/*.a ./artifacts/
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
