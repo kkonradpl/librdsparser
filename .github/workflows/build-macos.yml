@@ -2,7 +2,7 @@ name: macOS build
 
 on:
   push:
-    branches: [ "githubtest" ]
+    branches: [ "fixme" ]
 
 jobs:
   build-macos:

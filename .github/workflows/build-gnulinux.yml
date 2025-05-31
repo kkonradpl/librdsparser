@@ -1,0 +1,59 @@
+name: GNU/Linux build
+
+on:
+  push:
+    branches: [ "githubtest" ]
+
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        arch: [x86, x86_64, arm, aarch64]
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake make gcc \
+                                  gcc-multilib \
+                                  gcc-arm-linux-gnueabi \
+                                  gcc-aarch64-linux-gnu 
+
+      - name: Build
+        run: |
+          cd build
+          case "${{ matrix.arch }}" in
+            x86)
+              ./build.sh -DCMAKE_C_FLAGS=-m32
+              ;;
+            x86_64)
+              ./build.sh
+              ;;
+            arm)
+              ./build.sh -DCMAKE_SYSTEM_NAME=Linux \
+                         -DCMAKE_SYSTEM_PROCESSOR=arm \
+                         -DCMAKE_C_COMPILER=arm-linux-gnueabi-gcc
+              ;;
+            aarch64)
+              ./build.sh -DCMAKE_SYSTEM_NAME=Linux \
+                         -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+                         -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc
+              ;;
+          esac
+
+      - name: Move artifacts
+        run: |
+          mkdir artifacts
+          move ./build-${{matrix.arch}}/src/*.so ./artifacts/
+          move ./build-${{matrix.arch}}/src/*.a ./artifacts/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{matrix.arch}}
+          path: artifacts
