@@ -23,8 +23,8 @@ jobs:
       - name: Move artifacts
         run: |
           mkdir artifacts
-          move ./build/src/*.dylib ./artifacts/
-          move ./build/src/*.a ./artifacts/
+          mv ./build/src/*.dylib ./artifacts/
+          mv ./build/src/*.a ./artifacts/
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
