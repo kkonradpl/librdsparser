@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.10)
 project(librdsparser)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused -pedantic")
