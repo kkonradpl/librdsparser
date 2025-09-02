@@ -1,7 +1,7 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
  *  librdsparser – Radio Data System parser library
- *  Copyright (C) 2023-2024  Konrad Kosmatka
+ *  Copyright (C) 2023-2025  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -82,6 +82,9 @@ struct librdsparser
 
     /* Other data */
     int8_t last_rt_flag;
+    bool adaptive_ps;
+    int8_t adaptive_ps_counter;
+    int8_t adaptive_ps_errors;
 };
 
 #endif

@@ -1,7 +1,7 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
  *  librdsparser – Radio Data System parser library
- *  Copyright (C) 2023-2024  Konrad Kosmatka
+ *  Copyright (C) 2023-2025  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -352,6 +352,14 @@ enum rdsparser_country
     RDSPARSER_COUNTRY_COUNT
 };
 
+typedef uint8_t rdsparser_progressive_t;
+enum rdsparser_progressive
+{
+    RDSPARSER_PROGRESSIVE_DISABLED = 0,
+    RDSPARSER_PROGRESSIVE_AUTO = 1,
+    RDSPARSER_PROGRESSIVE_ENABLED = 2
+};
+
 typedef struct rdsparser_af rdsparser_af_t;
 typedef struct rdsparser_ct rdsparser_ct_t;
 
@@ -382,7 +390,7 @@ bool rdsparser_get_extended_check(const rdsparser_t *rds);
 void rdsparser_set_text_correction(rdsparser_t *rds, rdsparser_text_t text, rdsparser_block_type_t type, rdsparser_block_error_t error);
 rdsparser_block_error_t rdsparser_get_text_correction(const rdsparser_t *rds, rdsparser_text_t text, rdsparser_block_type_t type);
 
-void rdsparser_set_text_progressive(rdsparser_t *rds, rdsparser_text_t string, bool state);
+void rdsparser_set_text_progressive(rdsparser_t *rds, rdsparser_text_t string, rdsparser_progressive_t mode);
 bool rdsparser_get_text_progressive(const rdsparser_t *rds, rdsparser_text_t string);
 
 rdsparser_pi_t rdsparser_get_pi(const rdsparser_t *rds);

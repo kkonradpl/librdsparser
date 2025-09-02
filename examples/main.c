@@ -1,7 +1,7 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
  *  librdsparser – Radio Data System parser library
- *  Copyright (C) 2023-2024  Konrad Kosmatka
+ *  Copyright (C) 2023-2025  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -363,8 +363,8 @@ main(int   argc,
     rdsparser_set_text_correction(rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_INFO, RDSPARSER_BLOCK_ERROR_LARGE);
     rdsparser_set_text_correction(rds, RDSPARSER_TEXT_RT, RDSPARSER_BLOCK_TYPE_DATA, RDSPARSER_BLOCK_ERROR_LARGE);
 
-    rdsparser_set_text_progressive(rds, RDSPARSER_TEXT_PS, true);
-    rdsparser_set_text_progressive(rds, RDSPARSER_TEXT_RT, true);
+    rdsparser_set_text_progressive(rds, RDSPARSER_TEXT_PS, RDSPARSER_PROGRESSIVE_AUTO);
+    rdsparser_set_text_progressive(rds, RDSPARSER_TEXT_RT, RDSPARSER_PROGRESSIVE_AUTO);
 
     rdsparser_register_pi(rds, callback_pi);
     rdsparser_register_pty(rds, callback_pty);

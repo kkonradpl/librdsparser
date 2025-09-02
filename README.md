@@ -3,7 +3,7 @@ librdsparser
 
 Parser library for Radio Data System with progressive text correction
 
-Copyright (C) 2023-2024  Konrad Kosmatka
+Copyright (C) 2023-2025  Konrad Kosmatka
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -86,7 +86,7 @@ For the convenience of some existing protocols that use ASCII strings, there is 
 
 - ```A201200674697363``` (8 bytes, i.e. 4×16-bit blocks, with no information about error correction),
 
-- ```34DD054AE3054F2015``` (8 bytes + 2 bytes with error correction levels).
+- ```34DD054AE3054F2015``` (8 bytes + 1 byte with error correction levels).
 
 The last two hex characters are encoded in the same way NXP provides the error correction level in the API of their tuners, i.e. the byte is encoded as follows:
 
@@ -131,9 +131,16 @@ rdsparser_block_error_t rdsparser_get_text_correction(const rdsparser_t *rds, rd
 The progressive correction algorithm is disabled by default and can be enabled per text type using:
 
 ```
-void rdsparser_set_text_progressive(rdsparser_t *rds, rdsparser_text_t string, bool state)
+void rdsparser_set_text_progressive(rdsparser_t *rds, rdsparser_text_t string, rdsparser_progressive_t mode)
 bool rdsparser_get_text_progressive(const rdsparser_t *rds, rdsparser_text_t string)
 ```
+
+where `rdsparser_progressive_t mode` is one of the following:
+- `RDSPARSER_PROGRESSIVE_DISABLED`,
+- `RDSPARSER_PROGRESSIVE_AUTO`,
+- `RDSPARSER_PROGRESSIVE_ENABLED`.
+
+The `RDSPARSER_PROGRESSIVE_AUTO` mode is effective only for `RDSPARSER_TEXT_PS` and provides seamless switching between progressive mode for static and dynamic RDS PS. Additionally it protects PS against corrupted data that is rarely marked as correct by decoder. For other types of text, it works exactly the same as `RDSPARSER_PROGRESSIVE_ENABLED`.
 
 # Progressive correction
 
@@ -147,6 +154,7 @@ For example, when one wants to extract PS string characters, the following value
 - Programme service name segment (2 * 8 = 16 bits from the block D).
 
 So, one needs only 4 + 2 = 6 bits from the second block B (`RDSPARSER_BLOCK_TYPE_INFO`) and all 16 bits from block D (`RDSPARSER_BLOCK_TYPE_DATA`). Because of that, a weighted method of calculating the overall error correction level of each character in a string has been implemented, where the data type block (C or D) has a higher weight than info block (B).
+
 
 The progressive correction requires a decoder that is able to perform error correction and provide information about it, like NXP TEF668X.
 

@@ -1,7 +1,7 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
  *  librdsparser – Radio Data System parser library
- *  Copyright (C) 2023-2024  Konrad Kosmatka
+ *  Copyright (C) 2023-2025  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -66,6 +66,14 @@ rdsparser_clear(rdsparser_t *rds)
     rdsparser_string_clear(rds->rt[0]);
     rdsparser_string_clear(rds->rt[1]);
     rdsparser_string_clear(rds->ptyn);
+
+    if (rds->adaptive_ps)
+    {
+        rds->progressive[RDSPARSER_TEXT_PS] = true;
+        rds->adaptive_ps_counter = 0;
+        rds->adaptive_ps_errors = 0;
+    }
+
     rds->last_rt_flag = -1;
 }
 
@@ -126,11 +134,16 @@ rdsparser_get_text_correction(const rdsparser_t      *rds,
 }
 
 void
-rdsparser_set_text_progressive(rdsparser_t      *rds,
-                               rdsparser_text_t  text,
-                               bool              state)
+rdsparser_set_text_progressive(rdsparser_t             *rds,
+                               rdsparser_text_t         text,
+                               rdsparser_progressive_t  mode)
 {
-    rds->progressive[text] = state;
+    rds->progressive[text] = (mode != RDSPARSER_PROGRESSIVE_DISABLED);
+    if (text == RDSPARSER_TEXT_PS)
+    {
+        rds->adaptive_ps = (mode == RDSPARSER_PROGRESSIVE_AUTO);
+        rds->adaptive_ps_counter = 0;
+    }
 }
 
 bool

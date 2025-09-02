@@ -1,7 +1,7 @@
 /*  SPDX-License-Identifier: LGPL-2.1-or-later
  *
  *  librdsparser – Radio Data System parser library
- *  Copyright (C) 2023  Konrad Kosmatka
+ *  Copyright (C) 2023-2025  Konrad Kosmatka
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -58,7 +58,7 @@ const rdsparser_string_error_t*
 rdsparser_string_get_errors(const rdsparser_string_t *string)
 {
     const uint8_t size = rdsparser_string_get_size(string);
-    return (uint8_t*)(string + 1 + size + 1);
+    return (uint8_t*)(rdsparser_string_get_content(string) + size + 1);
 }
 
 bool
@@ -90,14 +90,6 @@ rdsparser_string_clear(rdsparser_string_t *string)
         content[i] = ' ';
         errors[i] = RDSPARSER_STRING_ERROR_UNCORRECTABLE;
     }
-}
-
-static rdsparser_string_error_t
-rdsparser_string_calculate_error(rdsparser_block_error_t info_error,
-                                 rdsparser_block_error_t data_error)
-{
-    const uint8_t value = 2 * info_error + 3 * data_error;
-    return (rdsparser_string_error_t)(value ? value - 1 : 0);
 }
 
 static rdsparser_string_char_t
@@ -150,18 +142,17 @@ rdsparser_string_convert(uint8_t input)
 #endif
 }
 
-static bool
-rdsparser_string_update_single(rdsparser_string_t      *string,
-                               uint8_t                  input,
-                               rdsparser_block_error_t  info_error,
-                               rdsparser_block_error_t  data_error,
-                               uint8_t                  position,
-                               bool                     progressive,
-                               bool                     allow_eol)
+bool
+rdsparser_string_update(rdsparser_string_t       *string,
+                        uint8_t                   position,
+                        uint8_t                   input,
+                        rdsparser_string_error_t  error,
+                        bool                      progressive,
+                        bool                      allow_eol,
+                        bool                      update)
 {
     rdsparser_string_char_t *output = (rdsparser_string_char_t*)rdsparser_string_get_content(string);
     rdsparser_string_error_t *output_errors = (rdsparser_string_error_t*)rdsparser_string_get_errors(string);
-    rdsparser_string_error_t error = rdsparser_string_calculate_error(info_error, data_error);
 
     if (progressive &&
         output_errors[position] < error)
@@ -173,8 +164,7 @@ rdsparser_string_update_single(rdsparser_string_t      *string,
     if (input == '\r')
     {
         if (!allow_eol ||
-            info_error != RDSPARSER_BLOCK_ERROR_NONE ||
-            data_error != RDSPARSER_BLOCK_ERROR_NONE)
+            error != RDSPARSER_STRING_ERROR_NONE)
         {
             /* Only error-free line endings */
             return false;
@@ -188,8 +178,7 @@ rdsparser_string_update_single(rdsparser_string_t      *string,
 
     if (input >= 0x7F)
     {
-        if (info_error != RDSPARSER_BLOCK_ERROR_NONE ||
-            data_error != RDSPARSER_BLOCK_ERROR_NONE)
+        if (error != RDSPARSER_STRING_ERROR_NONE)
         {
             /* Special characters are used rarely,
                so use only error-free info and data */
@@ -201,6 +190,7 @@ rdsparser_string_update_single(rdsparser_string_t      *string,
     }
 
     rdsparser_string_char_t character = rdsparser_string_convert(input);
+
     if (output[position] == character &&
         output_errors[position] <= error)
     {
@@ -208,33 +198,11 @@ rdsparser_string_update_single(rdsparser_string_t      *string,
         return false;
     }
 
-    output[position] = character;
-    output_errors[position] = error;
-    return true;
-}
-
-bool
-rdsparser_string_update(rdsparser_string_t      *string,
-                        const char               input[2],
-                        rdsparser_block_error_t  info_error,
-                        rdsparser_block_error_t  data_error,
-                        uint8_t                  position,
-                        bool                     progressive,
-                        bool                     allow_eol)
-{
-    const uint8_t chunk_length = 2;
-    bool changed = false;
-
-    for (uint8_t i = 0; i < chunk_length; i++)
+    if (update)
     {
-        changed |= rdsparser_string_update_single(string,
-                                                  input[i],
-                                                  info_error,
-                                                  data_error,
-                                                  position + i,
-                                                  progressive,
-                                                  allow_eol);
+        output[position] = character;
+        output_errors[position] = error;
     }
 
-    return changed;
+    return true;
 }
