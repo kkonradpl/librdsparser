@@ -30,7 +30,7 @@ jobs:
           mkdir artifacts
           mv ./build/src/*.dylib ./artifacts/
           mv ./build/src/*.a ./artifacts/
-          (cd artifacts && zip -r "../macos.zip" .)
+          (cd artifacts && zip -r "../librdsparser-macos.zip" .)
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -42,4 +42,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
-          gh release upload "${{github.event.release.tag_name}}" "macos.zip"
+          gh release upload "${{github.event.release.tag_name}}" "librdsparser-macos.zip"

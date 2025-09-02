@@ -43,7 +43,7 @@ jobs:
           mkdir artifacts
           move ./build-${{matrix.arch}}/src/*.dll ./artifacts/
           move ./build-${{matrix.arch}}/src/*.a ./artifacts/
-          Compress-Archive -Path "./artifacts/*" -DestinationPath "${{matrix.arch}}.zip"
+          Compress-Archive -Path "./artifacts/*" -DestinationPath "librdsparser-${{matrix.arch}}.zip"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -55,4 +55,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
-          gh release upload "${{github.event.release.tag_name}}" "${{matrix.arch}}.zip"
+          gh release upload "${{github.event.release.tag_name}}" "librdsparser-${{matrix.arch}}.zip"
