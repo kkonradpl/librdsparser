@@ -16,7 +16,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: brew install cmake gcc
+        run: |
+          brew update && (brew list cmake || brew install cmake)
+          brew install gcc
 
       - name: Build for macOS
         run: |
@@ -28,7 +30,7 @@ jobs:
           mkdir artifacts
           mv ./build/src/*.dylib ./artifacts/
           mv ./build/src/*.a ./artifacts/
-          zip -r macos.zip artifacts/*
+          (cd artifacts && zip -r "../macos.zip" .)
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
