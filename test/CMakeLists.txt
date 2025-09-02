@@ -10,7 +10,7 @@ function(ADD_RDSPARSER_TEST TEST_NAME)
     add_executable(${TEST_NAME} ${TEST_NAME}.c)
     add_dependencies(${TEST_NAME} ${TEST_NAME} rdsparser)
     add_test(${TEST_NAME} ${TEST_NAME})
-    #add_test(${TEST_NAME}_valgrind ${Valgrind} ./${TEST_NAME})
+    add_test(${TEST_NAME}_valgrind ${Valgrind} ./${TEST_NAME})
     target_link_libraries(${TEST_NAME} rdsparser cmocka ${LIBRARIES})
 endfunction()
 
