@@ -35,7 +35,7 @@ typedef struct {
 static int
 group_setup(void **state)
 {
-    test_context_t *ctx = calloc(sizeof(test_context_t), 1);
+    test_context_t *ctx = calloc(1, sizeof(test_context_t));
     *state = ctx;
 
 #ifndef RDSPARSER_DISABLE_UNICODE

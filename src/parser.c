@@ -23,6 +23,7 @@
 #include "group2.h"
 #include "group4.h"
 #include "group10.h"
+#include "group15.h"
 #include "string.h"
 
 #define RDSPARSER_PROGRESSIVE_THRESHOLD_INSTANT 6
@@ -72,6 +73,10 @@ rdsparser_parser_process(rdsparser_t             *rds,
 
         case 10:
             rdsparser_group10_parse(rds, data, errors, flag);
+            break;
+
+        case 15:
+            rdsparser_group15_parse(rds, data, errors, flag);
             break;
     }
 }

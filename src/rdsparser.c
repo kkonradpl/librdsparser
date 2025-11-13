@@ -22,6 +22,7 @@
 #include "parser.h"
 #include "utils.h"
 #include "string.h"
+#include "lps.h"
 
 #ifndef RDSPARSER_DISABLE_HEAP
 rdsparser_t*
@@ -66,6 +67,7 @@ rdsparser_clear(rdsparser_t *rds)
     rdsparser_string_clear(rds->rt[0]);
     rdsparser_string_clear(rds->rt[1]);
     rdsparser_string_clear(rds->ptyn);
+    rdsparser_lps_init(&rds->lps);
 
     if (rds->adaptive_ps)
     {
@@ -325,6 +327,13 @@ rdsparser_get_ptyn(const rdsparser_t *rds)
     return rds->ptyn;
 }
 
+const char*
+rdsparser_get_lps(const rdsparser_t *rds)
+{
+    const char *data = rdsparser_lps_get(&rds->lps);
+    return data ? data : "";
+}
+
 void
 rdsparser_set_user_data(rdsparser_t *rds,
                         void        *user_data)
@@ -414,4 +423,11 @@ rdsparser_register_ct(rdsparser_t  *rds,
                       void        (*callback_ct)(rdsparser_t*, const rdsparser_ct_t*, void*))
 {
     rds->callback_ct = callback_ct;
+}
+
+void
+rdsparser_register_lps(rdsparser_t  *rds,
+                       void        (*callback_lps)(rdsparser_t*, void*))
+{
+    rds->callback_lps = callback_lps;
 }

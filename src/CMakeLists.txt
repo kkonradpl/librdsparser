@@ -20,6 +20,10 @@ set(SOURCE_FILES
         group4.h
         group10.c
         group10.h
+        group15.c
+        group15.h
+        lps.c
+        lps.h
         rdsparser.c
         parser.c
         parser.h

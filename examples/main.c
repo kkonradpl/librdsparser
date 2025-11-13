@@ -204,6 +204,14 @@ static const char *rds_data[] =
     "A201A0015445535400", // PTYN
     "A2014001D750018200", // CT
     "A201100000E0000000", // ECC
+    "A201F4625465737400", // LPS
+    "A201F46320CEA9CF00", // LPS
+    "A201F46480C2B0C200", // LPS
+    "A201F465B1C2AEC200", // LPS
+    "A201F466A9E284A200", // LPS
+    "A201F4670D0D0D0D00", // LPS
+    "A201F4604C6F6E6700", // LPS
+    "A201F4612050532000"  // LPS
 };
 
 static void
@@ -335,6 +343,13 @@ callback_ct(rdsparser_t          *rds,
            abs(offset % 60));
 }
 
+static void
+callback_lps(rdsparser_t *rds,
+             void        *user_data)
+{
+    printf("Long PS: %s\n", rdsparser_get_lps(rds));
+}
+
 int
 main(int   argc,
      char* argv[])
@@ -378,6 +393,7 @@ main(int   argc,
     rdsparser_register_rt(rds, callback_rt);
     rdsparser_register_ptyn(rds, callback_ptyn);
     rdsparser_register_ct(rds, callback_ct);
+    rdsparser_register_lps(rds, callback_lps);
 
     for (size_t i = 0; i < sizeof(rds_data) / sizeof(char*); i++)
     {

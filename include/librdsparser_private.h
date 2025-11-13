@@ -53,6 +53,12 @@ typedef struct rdsparser_buffer
     bool extended_check;
 } rdsparser_buffer_t;
 
+typedef struct rdsparser_lps
+{
+    char data[RDSPARSER_LPS_MAX_LENGTH + 1];
+    uint32_t valid;
+} rdsparser_lps_t;
+
 struct librdsparser
 {
     /* Data buffers */
@@ -60,6 +66,7 @@ struct librdsparser
     rdsparser_string_t ps[RDSPARSER_STRING_SIZE(RDSPARSER_PS_LENGTH)];
     rdsparser_string_t rt[RDSPARSER_RT_FLAG_COUNT][RDSPARSER_STRING_SIZE(RDSPARSER_RT_LENGTH)];
     rdsparser_string_t ptyn[RDSPARSER_STRING_SIZE(RDSPARSER_PTYN_LENGTH)];
+    rdsparser_lps_t lps;
 
     /* Settings */
     bool progressive[RDSPARSER_TEXT_COUNT];
@@ -79,6 +86,7 @@ struct librdsparser
     void (*callback_rt)(rdsparser_t*, rdsparser_rt_flag_t, void*);
     void (*callback_ptyn)(rdsparser_t*, void*);
     void (*callback_ct)(rdsparser_t*, const rdsparser_ct_t*, void*);
+    void (*callback_lps)(rdsparser_t*, void*);
 
     /* Other data */
     int8_t last_rt_flag;

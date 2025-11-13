@@ -32,7 +32,7 @@ typedef struct {
 static int
 group_setup(void **state)
 {
-    test_context_t *ctx = calloc(sizeof(test_context_t), 1);
+    test_context_t *ctx = calloc(1, sizeof(test_context_t));
     *state = ctx;
     return 0;
 }
@@ -160,6 +160,14 @@ callback_ct(rdsparser_t          *rds,
     function_called();
 }
 
+static void
+callback_lps(rdsparser_t *rds,
+             void        *user_data)
+{
+    (void)user_data;
+    function_called();
+}
+
 /* ------------------------------------------------ */
 
 static void
@@ -220,6 +228,8 @@ rdsparser_test_reset(void **state)
         assert_int_equal(content[i], ' ');
         assert_int_equal(errors[i], RDSPARSER_STRING_ERROR_UNCORRECTABLE);
     }
+
+    assert_string_equal(rdsparser_get_lps(&ctx->rds), "");
 }
 
 static void
@@ -514,6 +524,22 @@ rdsparser_test_register_ct(void **state)
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "3F444541D7500580"), true);
 }
 
+static void
+rdsparser_test_register_lps(void **state)
+{
+    test_context_t *ctx = *state;
+    rdsparser_register_lps(&ctx->rds, callback_lps);
+    expect_function_call(callback_lps);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "A201F46254657374"), true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "A201F46320CEA9CF"), true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "A201F46480C2B0C2"), true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "A201F465B1C2AEC2"), true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "A201F466A9E284A2"), true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "A201F4670D0D0D0D"), true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "A201F4604C6F6E67"), true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "A201F46120505320"), true);
+}
+
 const struct CMUnitTest tests[] =
 {
     cmocka_unit_test_setup_teardown(rdsparser_test_reset, test_setup, test_teardown),
@@ -544,7 +570,8 @@ const struct CMUnitTest tests[] =
     cmocka_unit_test_setup_teardown(rdsparser_test_register_ps, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_register_rt, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(rdsparser_test_register_ptyn, test_setup, test_teardown),
-    cmocka_unit_test_setup_teardown(rdsparser_test_register_ct, test_setup, test_teardown)
+    cmocka_unit_test_setup_teardown(rdsparser_test_register_ct, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(rdsparser_test_register_lps, test_setup, test_teardown)
 };
 
 int

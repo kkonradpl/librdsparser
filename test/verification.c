@@ -47,12 +47,13 @@ typedef struct {
     uint8_t ct_hour;
     uint8_t ct_minute;
     int16_t ct_offset;
+    const char *lps;
 } test_context_t;
 
 static int
 group_setup(void **state)
 {
-    test_context_t *ctx = calloc(sizeof(test_context_t), 1);
+    test_context_t *ctx = calloc(1, sizeof(test_context_t));
     *state = ctx;
     return 0;
 }
@@ -204,6 +205,16 @@ callback_ct(rdsparser_t          *rds,
     assert_int_equal(rdsparser_ct_get_minute(ct), ctx->ct_minute);
     assert_int_equal(rdsparser_ct_get_offset(ct), ctx->ct_offset);
 
+    function_called();
+}
+
+static void
+callback_lps(rdsparser_t *rds,
+             void        *user_data)
+{
+    test_context_t *ctx = (test_context_t*)user_data;
+    const char *content = rdsparser_get_lps(rds);
+    assert_string_equal(content, ctx->lps);
     function_called();
 }
 
@@ -988,6 +999,21 @@ verification_ct(void **state)
     assert_int_equal(rdsparser_parse_string(&ctx->rds, "23534541D7500182"), true);
 }
 
+static void
+verification_lps(void **state)
+{
+    test_context_t *ctx = *state;
+    rdsparser_register_lps(&ctx->rds, callback_lps);
+
+    ctx->lps = "®ąðió 123";
+
+    expect_function_call(callback_lps);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234F460C2AEC485"), true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234F461C3B069C3"), true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234F462B3203132"), true);
+    assert_int_equal(rdsparser_parse_string(&ctx->rds, "1234F463330D0D0D"), true);
+}
+
 const struct CMUnitTest tests[] =
 {
     cmocka_unit_test_setup_teardown(verification_pi, test_setup, test_teardown),
@@ -1032,7 +1058,8 @@ const struct CMUnitTest tests[] =
     cmocka_unit_test_setup_teardown(verification_rt_empty, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_rt_empty_with_error, test_setup, test_teardown),
     cmocka_unit_test_setup_teardown(verification_ptyn, test_setup, test_teardown),
-    cmocka_unit_test_setup_teardown(verification_ct, test_setup, test_teardown)
+    cmocka_unit_test_setup_teardown(verification_ct, test_setup, test_teardown),
+    cmocka_unit_test_setup_teardown(verification_lps, test_setup, test_teardown)
 };
 
 int

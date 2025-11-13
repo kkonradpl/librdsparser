@@ -18,6 +18,7 @@ koffi.proto('void callback_ps(void *rds, void *user_data)');
 koffi.proto('void callback_rt(void *rds, int flag, void *user_data)');
 koffi.proto('void callback_ptyn(void *rds, void *user_data)');
 koffi.proto('void callback_ct(void *rds, void *ct, void *user_data)');
+koffi.proto('void callback_lps(void *rds, void *user_data)');
 
 const rdsparser = {
     new: lib.func('void* rdsparser_new()'),
@@ -37,6 +38,7 @@ const rdsparser = {
     get_ps: lib.func('void* rdsparser_get_ps(void *rds)'),
     get_rt: lib.func('void* rdsparser_get_rt(void *rds, int flag)'),
     get_ptyn: lib.func('void* rdsparser_get_ptyn(void *rds)'),
+    get_lps: lib.func('const char* rdsparser_get_lps(void *rds)'),
     register_pi: lib.func('void rdsparser_register_pi(void *rds, void *cb)'),
     register_pty: lib.func('void rdsparser_register_pty(void *rds, void *cb)'),
     register_tp: lib.func('void rdsparser_register_tp(void *rds, void *cb)'),
@@ -49,6 +51,7 @@ const rdsparser = {
     register_rt: lib.func('void rdsparser_register_rt(void *rds, void *cb)'),
     register_ptyn: lib.func('void rdsparser_register_ptyn(void *rds, void *cb)'),
     register_ct: lib.func('void rdsparser_register_ct(void *rds, void *cb)'),
+    register_lps: lib.func('void rdsparser_register_lps(void *rds, void *cb)'),
     string_get_content: lib.func(unicode_type + '* rdsparser_string_get_content(void *string)'),
     string_get_errors: lib.func('uint8_t* rdsparser_string_get_errors(void *string)'),
     string_get_length: lib.func('uint8_t rdsparser_string_get_length(void *string)'),
@@ -141,7 +144,7 @@ const callbacks = {
         console.log('RT' + flag  + ': ' + value + ' (' + errors + ')')
     ), 'callback_rt*'),
 
-    ptyn: koffi.register((rds, flag) => (
+    ptyn: koffi.register((rds) => (
         ptyn = rdsparser.get_ptyn(rds),
         value = decode_unicode(ptyn),
         errors = decode_errors(ptyn),
@@ -159,7 +162,12 @@ const callbacks = {
         tz_hour = String(Math.abs(Math.floor(offset / 60))).padStart(2, '0'),
         tz_minute = String(Math.abs(offset % 60)).padStart(2, '0'),
         console.log('CT: ' + year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ' (' + tz_sign + tz_hour + ':' + tz_minute + ')')
-    ), 'callback_ct*')
+    ), 'callback_ct*'),
+
+    lps: koffi.register((rds) => (
+        lps = rdsparser.get_lps(rds),
+        console.log('Long PS: ' + lps)
+    ), 'callback_lps*'),
 }
 
 let rds = rdsparser.new()
@@ -181,6 +189,7 @@ rdsparser.register_ps(rds, callbacks.ps);
 rdsparser.register_rt(rds, callbacks.rt);
 rdsparser.register_ptyn(rds, callbacks.ptyn);
 rdsparser.register_ct(rds, callbacks.ct);
+rdsparser.register_lps(rds, callbacks.lps);
 
 let data = [
     "A20120017420696E02",
@@ -366,6 +375,14 @@ let data = [
     "A201A0015445535400", // PTYN
     "A2014001D750018200", // CT
     "A201100000E0000000", // ECC
+    "A201F4625465737400", // LPS
+    "A201F46320CEA9CF00", // LPS
+    "A201F46480C2B0C200", // LPS
+    "A201F465B1C2AEC200", // LPS
+    "A201F466A9E284A200", // LPS
+    "A201F4670D0D0D0D00", // LPS
+    "A201F4604C6F6E6700", // LPS
+    "A201F4612050532000"  // LPS
 ]
 
 for (let group of data) {
