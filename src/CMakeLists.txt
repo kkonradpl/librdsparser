@@ -33,11 +33,13 @@ set(SOURCE_FILES
         utils.c
         utils.h)
 
-add_library(rdsparser SHARED ${SOURCE_FILES})
-set_target_properties(rdsparser PROPERTIES PUBLIC_HEADER librdsparser.h)
-
-add_library(rdsparser_static STATIC ${SOURCE_FILES})
-set_target_properties(rdsparser_static PROPERTIES PUBLIC_HEADER librdsparser.h)
+if (RDSPARSER_BUILD_STATIC)
+    add_library(rdsparser STATIC ${SOURCE_FILES})
+    set_target_properties(rdsparser PROPERTIES PUBLIC_HEADER librdsparser.h)    
+else()
+    add_library(rdsparser SHARED ${SOURCE_FILES})
+    set_target_properties(rdsparser PROPERTIES PUBLIC_HEADER librdsparser.h)
+endif()
 
 if(RDSPARSER_DISABLE_HEAP)
     set_target_properties(rdsparser PROPERTIES PUBLIC_HEADER librdsparser_private.h)
